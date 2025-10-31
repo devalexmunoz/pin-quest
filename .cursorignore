@@ -1,0 +1,8 @@
+# flow
+emulator-account.pkey
+.env
+
+# Pay attention to imports directory
+!imports
+pin-quest-testnet.pkey
+pin-quest-testnet-2.pkey

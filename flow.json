@@ -1,0 +1,118 @@
+{
+	"contracts": {
+		"PinQuest": {
+			"source": "./cadence/contracts/PinQuest.cdc",
+			"aliases": {
+				"testnet": "0e84a8c86ccbf05a"
+			}
+		},
+		"Pinnacle": {
+			"source": "./cadence/contracts/Pinnacle.cdc",
+			"aliases": {
+				"testnet": "0e84a8c86ccbf05a"
+			}
+		},
+		"QuestJobHandler": {
+			"source": "./cadence/contracts/QuestJobHandler.cdc",
+			"aliases": {
+				"testnet": "0e84a8c86ccbf05a"
+			}
+		}
+	},
+	"dependencies": {
+		"FlowToken": {
+			"source": "testnet://7e60df042a9c0868.FlowToken",
+			"hash": "",
+			"aliases": {
+				"emulator": "0ae53cb6e3f42a79",
+				"mainnet": "1654653399040a61",
+				"testnet": "7e60df042a9c0868"
+			}
+		},
+		"FlowTransactionScheduler": {
+			"source": "testnet://8c5303eaa26202d6.FlowTransactionScheduler",
+			"hash": "",
+			"aliases": {
+				"emulator": "f8d6e0586b0a20c7",
+				"mainnet": "e467b9dd11fa00df",
+				"testnet": "8c5303eaa26202d6"
+			}
+		},
+		"FlowTransactionSchedulerUtils": {
+			"source": "testnet://8c5303eaa26202d6.FlowTransactionSchedulerUtils",
+			"hash": "86820aba001acea9e7f5058ee25a6735fec59c72dcfea9311c668b10908b1543",
+			"aliases": {
+				"emulator": "f8d6e0586b0a20c7",
+				"testnet": "8c5303eaa26202d6"
+			}
+		},
+		"FungibleToken": {
+			"source": "testnet://9a0766d93b6608b7.FungibleToken",
+			"hash": "",
+			"aliases": {
+				"emulator": "ee82856bf20e2aa6",
+				"mainnet": "f233dcee88fe0abe",
+				"testnet": "9a0766d93b6608b7"
+			}
+		},
+		"MetadataViews": {
+			"source": "testnet://631e88ae7f1d7c20.MetadataViews",
+			"hash": "",
+			"aliases": {
+				"emulator": "f8d6e0586b0a20c7",
+				"mainnet": "1d7e57aa55817448",
+				"testnet": "631e88ae7f1d7c20"
+			}
+		},
+		"NonFungibleToken": {
+			"source": "testnet://631e88ae7f1d7c20.NonFungibleToken",
+			"hash": "",
+			"aliases": {
+				"emulator": "f8d6e0586b0a20c7",
+				"mainnet": "1d7e57aa55817448",
+				"testnet": "631e88ae7f1d7c20"
+			}
+		},
+		"ViewResolver": {
+			"source": "testnet://631e88ae7f1d7c20.ViewResolver",
+			"hash": "374a1994046bac9f6228b4843cb32393ef40554df9bd9907a702d098a2987bde",
+			"aliases": {
+				"emulator": "f8d6e0586b0a20c7",
+				"mainnet": "1d7e57aa55817448",
+				"testnet": "631e88ae7f1d7c20"
+			}
+		}
+	},
+	"networks": {
+		"emulator": "127.0.0.1:3569",
+		"mainnet": "access.mainnet.nodes.onflow.org:9000",
+		"testing": "127.0.0.1:3569",
+		"testnet": "access.devnet.nodes.onflow.org:9000"
+	},
+	"accounts": {
+		"pin-quest-testnet-2": {
+			"address": "0e84a8c86ccbf05a",
+			"key": {
+				"type": "file",
+				"location": "pin-quest-testnet-2.pkey"
+			}
+		}
+	},
+	"deployments": {
+		"testnet": {
+			"pin-quest-testnet-2": [
+				{
+					"name": "Pinnacle",
+					"args": [
+						{
+							"value": "259200",
+							"type": "UInt64"
+						}
+					]
+				},
+				"PinQuest",
+				"QuestJobHandler"
+			]
+		}
+	}
+}
