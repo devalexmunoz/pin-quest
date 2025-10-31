@@ -2,9 +2,9 @@
 import { computed }from 'vue'
 import { storeToRefs } from 'pinia'
 import { useCollectionStore } from '../stores/collection'
-import { checkPin } from '../flow/checkPin' // Your helper script
+import { useQuestStore } from '../stores/quest'
+import { checkPin } from '../flow/checkPin'
 
-// 1. Define props and emits
 const props = defineProps({
   show: {
     type: Boolean,
@@ -13,21 +13,50 @@ const props = defineProps({
   requirement: {
     type: String,
     required: true
+  },
+  // IDs of pins currently selected in other slots on the canvas
+  unavailablePinIDs: {
+    type: Array,
+    default: () => []
   }
 })
 
 const emit = defineEmits(['close', 'pin-selected'])
 
-// 2. Get all pins from the collection store
+// 1. Get all pins from the collection store
 const collectionStore = useCollectionStore()
 const { allPins } = storeToRefs(collectionStore)
 
+// 2. Get usedPins from the Quest Store (Global Game Constraint)
+const questStore = useQuestStore()
+const { usedPins } = storeToRefs(questStore)
+
 // 3. Create a computed list of pins with eligibility
 const pinsWithEligibility = computed(() => {
-  return allPins.value.map(pin => ({
-    ...pin,
-    isEligible: checkPin(pin, props.requirement)
-  }))
+  return allPins.value.map(pin => {
+    // Pin IDs are UInT64 in Cadence but strings in FCL/JS dictionary keys
+    const pinIdString = pin.id.toString()
+
+    // Condition 1: Does it meet the quest trait requirement?
+    const meetsRequirement = checkPin(pin, props.requirement)
+
+    // Condition 2: Is it already selected in another slot on this canvas?
+    const isUnavailable = props.unavailablePinIDs.includes(pinIdString)
+
+    // Condition 3: Has it been used in a previous quest this season (from the contract)?
+    const isHistoricallyUsed = !!usedPins.value[pinIdString]
+
+    return {
+      ...pin,
+      meetsRequirement,
+      isUnavailable,
+      isHistoricallyUsed,
+      // A pin is ELIGIBLE only if it meets the requirement and hasn't been used.
+      isEligible: meetsRequirement && !isHistoricallyUsed && !isUnavailable,
+      // A pin is FILTERED if it fails ANY of the three conditions
+      isFiltered: !meetsRequirement || isHistoricallyUsed || isUnavailable
+    }
+  })
 })
 
 // 4. Handle pin selection
@@ -46,7 +75,6 @@ const closeModal = () => {
 
 <template>
   <div v-if="show" class="modal-overlay" @click.self="closeModal">
-
     <div class="modal-content">
       <div class="modal-header">
         <h2>Select a Pin</h2>
@@ -59,12 +87,21 @@ const closeModal = () => {
             v-for="pin in pinsWithEligibility"
             :key="pin.id"
             class="pin-card"
-            :class="{ 'is-ineligible': !pin.isEligible }"
+            :class="{
+            'is-ineligible': pin.isFiltered,
+            'is-used-history': pin.isHistoricallyUsed,
+            'is-used-canvas': pin.isUnavailable
+          }"
             @click="selectPin(pin)"
         >
           <img :src="pin.thumbnail" :alt="pin.name" />
           <p>{{ pin.name }}</p>
           <span>ID: {{ pin.id }}</span>
+
+          <div v-if="pin.isHistoricallyUsed" class="used-overlay">USED (SEASON)</div>
+          <div v-else-if="pin.isUnavailable" class="used-overlay">USED (CANVAS)</div>
+          <div v-else-if="!pin.meetsRequirement" class="used-overlay">NO MATCH</div>
+
         </div>
       </div>
 

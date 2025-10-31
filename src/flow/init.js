@@ -17,6 +17,8 @@ export const init = async () => {
         return
     }
 
+    const projectId = getViteEnv('VITE_WALLETCONNECT_PROJECT_ID')
+
     const flowNetwork = getViteEnv('VITE_FLOW_NETWORK')
     const accessNodeApi = getViteEnv('VITE_FLOW_ACCESS_NODE_API')
 
@@ -27,6 +29,8 @@ export const init = async () => {
 
         'app.detail.title': 'Pinnacle Quest',
         'app.detail.icon': 'https://placekitten.com/g/200/200',
+
+        'walletconnect.projectId': projectId,
     })
         .load({
             flowJSON: flowJSON

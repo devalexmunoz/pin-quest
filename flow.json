@@ -3,19 +3,19 @@
 		"PinQuest": {
 			"source": "./cadence/contracts/PinQuest.cdc",
 			"aliases": {
-				"testnet": "0e84a8c86ccbf05a"
+				"testnet": "3f6d478d07d1d98b"
 			}
 		},
 		"Pinnacle": {
 			"source": "./cadence/contracts/Pinnacle.cdc",
 			"aliases": {
-				"testnet": "0e84a8c86ccbf05a"
+				"testnet": "3f6d478d07d1d98b"
 			}
 		},
 		"QuestJobHandler": {
 			"source": "./cadence/contracts/QuestJobHandler.cdc",
 			"aliases": {
-				"testnet": "0e84a8c86ccbf05a"
+				"testnet": "3f6d478d07d1d98b"
 			}
 		}
 	},
@@ -90,17 +90,17 @@
 		"testnet": "access.devnet.nodes.onflow.org:9000"
 	},
 	"accounts": {
-		"pin-quest-testnet-2": {
-			"address": "0e84a8c86ccbf05a",
+		"pin-quest-testnet-3": {
+			"address": "3f6d478d07d1d98b",
 			"key": {
 				"type": "file",
-				"location": "pin-quest-testnet-2.pkey"
+				"location": "pin-quest-testnet-3.pkey"
 			}
 		}
 	},
 	"deployments": {
 		"testnet": {
-			"pin-quest-testnet-2": [
+			"pin-quest-testnet-3": [
 				{
 					"name": "Pinnacle",
 					"args": [

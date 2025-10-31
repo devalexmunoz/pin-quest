@@ -1,4 +1,4 @@
-import "NonF_Token"
+import "NonFungibleToken"
 import "PinQuest"
 import "Pinnacle"
 
@@ -7,16 +7,17 @@ import "Pinnacle"
 
 transaction(pinIDs: [UInt64]) {
 
+    // 1. Define a variable to hold the signer
+    let signer: auth(Capabilities) &Account
+
     prepare(signer: auth(Capabilities) &Account) {
-        // We don't need to do anything in prepare
-        // except get the signer auth account, which is
-        // passed directly to the execute phase.
+        // 2. Save the signer from the prepare phase to the transaction's state
+        self.signer = signer
     }
 
     execute {
-        // Call the public function on the deployed PinQuest contract
-        // We pass the signer object directly, as required by the fix.
-        PinQuest.submitCanvas(pinIDs: pinIDs, signer: signer)
+        // 3. Call the public function using the saved signer
+        PinQuest.submitCanvas(pinIDs: pinIDs, signer: self.signer)
 
         log("Canvas submitted successfully.")
     }

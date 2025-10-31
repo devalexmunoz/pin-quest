@@ -1,19 +1,16 @@
 <script setup>
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useUserStore } from './stores/user' // Adjust path if needed
+import { useUserStore } from './stores/user'
 
 import WalletConnect from './components/WalletConnect.vue'
 import QuestCanvas from './components/QuestCanvas.vue'
 import UserCollection from './components/UserCollection.vue'
+import Leaderboard from './components/Leaderboard.vue' // 1. IMPORT
 
-// 1. Get the store
 const userStore = useUserStore()
-// 2. Get state reactively
 const { isLoggedIn } = storeToRefs(userStore)
 
-// 3. On mount, subscribe to user changes.
-// This will automatically update the store's state.
 onMounted(() => {
   userStore.subscribe()
 })
@@ -33,7 +30,7 @@ onMounted(() => {
 
     <div v-if="isLoggedIn">
       <QuestCanvas />
-      <UserCollection />
+      <Leaderboard /> <UserCollection />
     </div>
   </main>
 </template>

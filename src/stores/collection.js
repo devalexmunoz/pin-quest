@@ -1,7 +1,8 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { FlowService } from '@/flow/flow.service' // Import service
+import { FlowService } from '@/flow/flow.service'
 import { useUserStore } from './user'
+import { useQuestStore } from './quest' // NEW IMPORT
 
 import getPinsScript from '../flow/scripts/get-user-pins.cdc?raw'
 import checkCollectionScript from '../flow/scripts/check-pinnacle-collection.cdc?raw'
@@ -53,6 +54,7 @@ export const useCollectionStore = defineStore('collection', () => {
     const setupDemoWallet = async () => {
         isLoading.value = true
         const userStore = useUserStore()
+        const questStore = useQuestStore() // NEW: Get Quest Store
 
         try {
             loadingMessage.value = "Setting up new collection..."
@@ -65,6 +67,9 @@ export const useCollectionStore = defineStore('collection', () => {
 
             loadingMessage.value = "Loading new pins..."
             await fetchPins(userStore.userAddress)
+
+            // NEW: Fetch used pins *after* setup so new pins appear available
+            await questStore.fetchUsedPins()
 
         } catch (err) {
             console.error("Demo Setup Failed:", err)

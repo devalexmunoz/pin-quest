@@ -64,7 +64,7 @@ access(all) fun main(address: Address): [PinMetadata] {
             ?? panic("Could not borrow PinNFT reference")
         let renderID = nftRef.renderID
 
-        let thumbnailURL = "https://assets.disneypinnacle.com/render/".concat(renderID).concat("/front.png")
+        let thumbnailURL = "https://assets.disneypinnacle.com/render/".concat(renderID).concat("/front_cropped.png")
 
         pins.append(
             PinMetadata(

@@ -8,6 +8,7 @@ access(all) contract PinQuest {
     access(all) event QuestStarted(questID: UInt64, slot1: String, slot2: String, slot3: String)
     access(all) event QuestSubmitted(questID: UInt64, user: Address, score: UInt64)
     access(all) event QuestFinalized(questID: UInt64)
+    access(all) event PinUsed(pinID: UInt64, questID: UInt64, user: Address)
 
     access(all) struct QuestRules {
         access(all) let questID: UInt64
@@ -25,13 +26,15 @@ access(all) contract PinQuest {
 
     access(all) let QuestPublicPath: PublicPath
     access(all) let ExecutorStoragePath: StoragePath
-    
+
     access(all) var allPossibleQuests: [QuestRules]
-    
+
     access(all) var currentQuestID: UInt64
     access(all) var currentQuestRules: QuestRules
     access(all) var dailyLeaderboard: {Address: UInt64}
     access(all) var questHistory: {UInt64: {Address: UInt64}}
+
+    access(all) var usedPins: {UInt64: UInt64}
 
     access(all) resource interface QuestPublic {
         access(all) fun startNewDailyQuest()
@@ -40,12 +43,34 @@ access(all) contract PinQuest {
     access(all) fun submitCanvas(pinIDs: [UInt64], signer: auth(Capabilities) &Account) {
         let signerAddress = signer.address
 
+        // --- NEW: 1. CHECK IF USER HAS ALREADY SUBMITTED ---
+        assert(
+            self.dailyLeaderboard[signerAddress] == nil,
+            message: "User has already submitted a score for this quest."
+        )
+        // --------------------------------------------------
+
         assert(pinIDs.length == 3, message: "You must submit exactly 3 pins")
+
+        // --- 2. CURRENT CANVAS CHECK ---
+        let uniqueIDs: {UInt64: Bool} = {}
+        for id in pinIDs {
+            assert(uniqueIDs[id] == nil, message: "Pin ID ".concat(id.toString()).concat(" cannot be used in more than one slot on the same canvas."))
+            uniqueIDs[id] = true
+        }
+
+        // --- 3. SEASON HISTORY CHECK ---
+        for id in pinIDs {
+            if self.usedPins[id] != nil {
+                let questID = self.usedPins[id]!
+                panic("Pin ID ".concat(id.toString()).concat(" was already used in Quest ID ").concat(questID.toString()).concat(" this season."))
+            }
+        }
 
         let collectionRef = signer.capabilities
             .borrow<&{NonFungibleToken.CollectionPublic, ViewResolver.ResolverCollection}>(
                 Pinnacle.CollectionPublicPath
-            ) ?? panic("Could not borrow Pinnacle Collection capability implementing required interfaces.")
+            ) ?? panic("Could not borrow Pinnacle Collection capability.")
 
         var score: UInt64 = 0
         let requirements = [
@@ -68,6 +93,12 @@ access(all) contract PinQuest {
                 panic("Pin ".concat(id.toString()).concat(" does not meet requirement: ").concat(req))
             }
             i = i + 1
+        }
+
+        // --- 4. UPDATE HISTORY ---
+        for id in pinIDs {
+            self.usedPins[id] = self.currentQuestID
+            emit PinUsed(pinID: id, questID: self.currentQuestID, user: signerAddress)
         }
 
         self.dailyLeaderboard[signerAddress] = score
@@ -113,7 +144,7 @@ access(all) contract PinQuest {
         self.questHistory[self.currentQuestID] = self.dailyLeaderboard
         self.dailyLeaderboard = {}
         self.currentQuestID = self.currentQuestID + 1
-        
+
         if self.allPossibleQuests.length == 0 { panic("No quests defined!") }
         let newQuestIndex = self.currentQuestID % UInt64(self.allPossibleQuests.length)
         self.currentQuestRules = self.allPossibleQuests[newQuestIndex]
@@ -131,9 +162,11 @@ access(all) contract PinQuest {
         self.currentQuestID = 0
         self.dailyLeaderboard = {}
         self.questHistory = {}
-        
+        self.usedPins = {} // Reset pin usage on hard admin reset
+
         if self.allPossibleQuests.length == 0 { panic("No quests defined!") }
         let newQuestIndex = self.currentQuestID % UInt64(self.allPossibleQuests.length)
+
         self.currentQuestRules = self.allPossibleQuests[newQuestIndex]
 
         emit QuestStarted(
@@ -143,6 +176,11 @@ access(all) contract PinQuest {
             slot3: self.currentQuestRules.slot3_requirement
         )
         log("--- QUEST STATE RESET TO 0 ---")
+    }
+
+    access(all) fun adminResetSeason() {
+        self.usedPins = {}
+        log("--- PIN USAGE HISTORY CLEARED FOR NEW SEASON ---")
     }
 
     access(all) fun adminUpdateQuests() {
@@ -155,13 +193,14 @@ access(all) contract PinQuest {
     access(all) fun getCurrentQuest() : QuestRules { return self.currentQuestRules }
     access(all) fun getLeaderboard(): {Address: UInt64} { return self.dailyLeaderboard }
     access(all) fun getQuestHistory(questID: UInt64): {Address: UInt64}? { return self.questHistory[questID] }
+    access(all) fun getUsedPins(): {UInt64: UInt64} { return self.usedPins }
 
     access(all) resource PublicQuestExecutor: QuestPublic {
         access(all) fun startNewDailyQuest() {
              PinQuest.startNewDailyQuest()
         }
     }
-   
+
     access(all) fun savePublicExecutorResource(account: auth(SaveValue, BorrowValue) &Account) {
         if account.storage.borrow<&PublicQuestExecutor>(from: self.ExecutorStoragePath) == nil {
             account.storage.save(<- create PublicQuestExecutor(), to: self.ExecutorStoragePath)
@@ -180,6 +219,7 @@ access(all) contract PinQuest {
         self.currentQuestID = 0
         self.dailyLeaderboard = {}
         self.questHistory = {}
+        self.usedPins = {} // Initialize the non-optional dictionary
         
         self.allPossibleQuests = [
             QuestRules(0, "Star Wars", "Digital Gold", "Any"),

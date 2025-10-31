@@ -1,5 +1,5 @@
 import * as fcl from '@onflow/fcl'
-import { init as initFCL } from './init' // The init.js file you already have
+import { init as initFCL } from './init'
 
 // 1. AUTHENTICATION
 // -----------------
@@ -34,8 +34,36 @@ const subscribeToCurrentUser = (callback) => {
     return fcl.currentUser.subscribe(callback)
 }
 
+
 // 2. FCL HELPERS
 // -----------------
+
+/**
+ * NEW: Helper function to parse our simple type strings (e.g., "Array(UInt64)")
+ * into complex FCL types (e.g., fcl.t.Array(fcl.t.UInt64)).
+ */
+const getFclType = (typeString) => {
+    // Check for Array types like "Array(String)" or "Array(UInt64)"
+    const arrayMatch = typeString.match(/^Array\((.*)\)$/);
+    if (arrayMatch) {
+        const innerTypeString = arrayMatch[1]; // e.g., "UInt64"
+        const innerFclType = fcl.t[innerTypeString];
+
+        if (innerFclType) {
+            return fcl.t.Array(innerFclType);
+        } else {
+            throw new Error(`Unsupported inner array type: ${innerTypeString}`);
+        }
+    }
+
+    // Check for simple types like "String", "Address", "UInt64"
+    const simpleType = fcl.t[typeString];
+    if (simpleType) {
+        return simpleType;
+    }
+
+    throw new Error(`Unsupported FCL type string: ${typeString}`);
+}
 
 /**
  * Executes a read-only Cadence script.
@@ -45,8 +73,8 @@ const subscribeToCurrentUser = (callback) => {
  */
 const query = async (cadence, args = {}) => {
     try {
-        // FIX: Map the structured argument object to FCL's expected format (value, type)
-        const fclArgs = Object.values(args).map((arg) => fcl.arg(arg.value, fcl.t[arg.type]))
+        // FIX: Use the new getFclType helper
+        const fclArgs = Object.values(args).map((arg) => fcl.arg(arg.value, getFclType(arg.type)))
 
         return await fcl.query({
             cadence,
@@ -66,8 +94,8 @@ const query = async (cadence, args = {}) => {
  */
 const mutate = async (cadence, args = {}) => {
     try {
-        // FIX: Map the structured argument object to FCL's expected format (value, type)
-        const fclArgs = Object.values(args).map((arg) => fcl.arg(arg.value, fcl.t[arg.type]))
+        // FIX: Use the new getFclType helper
+        const fclArgs = Object.values(args).map((arg) => fcl.arg(arg.value, getFclType(arg.type)))
 
         const transactionId = await fcl.mutate({
             cadence,
@@ -93,10 +121,6 @@ const onceSealed = (transactionId) => {
 // 3. EXPORT
 // ----------
 
-/**
- * We export all functions as a single object
- * to be imported as 'FlowService' in other files.
- */
 export const FlowService = {
     init,
     logIn,
