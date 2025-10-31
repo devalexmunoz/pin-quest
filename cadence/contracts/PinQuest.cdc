@@ -33,33 +33,51 @@ access(all) contract PinQuest {
     access(all) var currentQuestRules: QuestRules
     access(all) var dailyLeaderboard: {Address: UInt64}
     access(all) var questHistory: {UInt64: {Address: UInt64}}
-
     access(all) var usedPins: {UInt64: UInt64}
 
     access(all) resource interface QuestPublic {
         access(all) fun startNewDailyQuest()
     }
 
+    access(all) fun getPinRarityBonus(nft nftRef: &{ViewResolver.Resolver}): UInt64 {
+        var bonus: UInt64 = 0
+        let traitsView = MetadataViews.getTraits(nftRef)!
+
+        for trait in traitsView.traits {
+            switch trait.name {
+                case "IsChaser":
+                    if let value = trait.value as? Bool {
+                        if value == true {
+                            bonus = bonus + 150 // +150 for Chasers
+                        }
+                    }
+                case "EditionType":
+                     if let value = trait.value as? String {
+                         if value == "Limited Edition" {
+                             bonus = bonus + 50 // +50 for Limited Editions
+                         }
+                     }
+            }
+        }
+        return bonus
+    }
+
     access(all) fun submitCanvas(pinIDs: [UInt64], signer: auth(Capabilities) &Account) {
         let signerAddress = signer.address
 
-        // --- NEW: 1. CHECK IF USER HAS ALREADY SUBMITTED ---
+        // --- 1. All Validation Checks ---
         assert(
             self.dailyLeaderboard[signerAddress] == nil,
             message: "User has already submitted a score for this quest."
         )
-        // --------------------------------------------------
-
         assert(pinIDs.length == 3, message: "You must submit exactly 3 pins")
 
-        // --- 2. CURRENT CANVAS CHECK ---
         let uniqueIDs: {UInt64: Bool} = {}
         for id in pinIDs {
             assert(uniqueIDs[id] == nil, message: "Pin ID ".concat(id.toString()).concat(" cannot be used in more than one slot on the same canvas."))
             uniqueIDs[id] = true
         }
 
-        // --- 3. SEASON HISTORY CHECK ---
         for id in pinIDs {
             if self.usedPins[id] != nil {
                 let questID = self.usedPins[id]!
@@ -72,6 +90,7 @@ access(all) contract PinQuest {
                 Pinnacle.CollectionPublicPath
             ) ?? panic("Could not borrow Pinnacle Collection capability.")
 
+        // --- 2. Scoring & Synergy Logic ---
         var score: UInt64 = 0
         let requirements = [
             self.currentQuestRules.slot1_requirement,
@@ -79,23 +98,92 @@ access(all) contract PinQuest {
             self.currentQuestRules.slot3_requirement
         ]
 
+        // Dictionaries to track synergy counts
+        var franchiseCounts: {String: UInt64} = {}
+        var studioCounts: {String: UInt64} = {}
+        var materialCounts: {String: UInt64} = {} // NEW: Added Material counts
+
         var i = 0
         while i < pinIDs.length {
             let id = pinIDs[i]
             let req = requirements[i]
-
             let nftResolverRef = collectionRef.borrowViewResolver(id: id)
                  ?? panic("Could not borrow pin ID ".concat(id.toString()))
 
+            // A) Check Slot Requirement
             if self.checkPinTraits(nft: nftResolverRef, requirement: req) {
-                score = score + 100
+                score = score + 100 // +100 Base Score
             } else {
                 panic("Pin ".concat(id.toString()).concat(" does not meet requirement: ").concat(req))
+            }
+
+            // B) Add Rarity Bonus
+            score = score + self.getPinRarityBonus(nft: nftResolverRef)
+
+            // C) Populate Synergy Dictionaries
+            let traitsView = MetadataViews.getTraits(nftResolverRef)!
+            for trait in traitsView.traits {
+                if trait.name == "Franchises" {
+                    if let values = trait.value as? [String] {
+                        for franchise in values {
+                            franchiseCounts[franchise] = (franchiseCounts[franchise] ?? 0) + 1
+                        }
+                    }
+                }
+                if trait.name == "Studios" {
+                    if let values = trait.value as? [String] {
+                        for studio in values {
+                            studioCounts[studio] = (studioCounts[studio] ?? 0) + 1
+                        }
+                    }
+                }
+                // NEW: Populate Material counts
+                if trait.name == "Materials" {
+                     if let values = trait.value as? [String] {
+                        for material in values {
+                            materialCounts[material] = (materialCounts[material] ?? 0) + 1
+                        }
+                    }
+                }
             }
             i = i + 1
         }
 
-        // --- 4. UPDATE HISTORY ---
+        // D) Calculate Synergy Bonuses
+        for franchise in franchiseCounts.keys {
+            let count = franchiseCounts[franchise]!
+            if count == 2 {
+                score = score + 75 // +75 for a Franchise Pair
+            }
+            if count == 3 {
+                score = score + 200 // +200 for a Franchise Trio
+            }
+        }
+
+        for studio in studioCounts.keys {
+            let count = studioCounts[studio]!
+            if count == 2 {
+                score = score + 40 // +40 for a Studio Pair
+            }
+            if count == 3 {
+                score = score + 100 // +100 for a Studio Trio
+            }
+        }
+
+        // NEW: Calculate Material synergy
+        for material in materialCounts.keys {
+            let count = materialCounts[material]!
+            if count == 2 {
+                score = score + 50 // +50 for a Material Pair
+            }
+            if count == 3 {
+                score = score + 125 // +125 for a Material Trio
+            }
+        }
+        // --- End Scoring Logic ---
+
+
+        // --- 3. Finalize Submission ---
         for id in pinIDs {
             self.usedPins[id] = self.currentQuestID
             emit PinUsed(pinID: id, questID: self.currentQuestID, user: signerAddress)
@@ -162,7 +250,7 @@ access(all) contract PinQuest {
         self.currentQuestID = 0
         self.dailyLeaderboard = {}
         self.questHistory = {}
-        self.usedPins = {} // Reset pin usage on hard admin reset
+        self.usedPins = {}
 
         if self.allPossibleQuests.length == 0 { panic("No quests defined!") }
         let newQuestIndex = self.currentQuestID % UInt64(self.allPossibleQuests.length)
@@ -206,7 +294,7 @@ access(all) contract PinQuest {
             account.storage.save(<- create PublicQuestExecutor(), to: self.ExecutorStoragePath)
         }
     }
- 
+
     access(all) fun publishPublicExecutor(account: auth(Capabilities, BorrowValue) &Account) {
         assert(account.storage.borrow<&PublicQuestExecutor>(from: self.ExecutorStoragePath) != nil, message: "Executor resource not found.")
         let cap = account.capabilities.storage.issue<&{QuestPublic}>(self.ExecutorStoragePath)
@@ -219,7 +307,7 @@ access(all) contract PinQuest {
         self.currentQuestID = 0
         self.dailyLeaderboard = {}
         self.questHistory = {}
-        self.usedPins = {} // Initialize the non-optional dictionary
+        self.usedPins = {}
         
         self.allPossibleQuests = [
             QuestRules(0, "Star Wars", "Digital Gold", "Any"),

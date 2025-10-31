@@ -1,8 +1,8 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { FlowService } from '@/flow/flow.service'
-import { useQuestStore } from './quest' // Import quest store
-import { useLeaderboardStore } from './leaderboard' // Import leaderboard store
+import { useQuestStore } from './quest'
+import { useLeaderboardStore } from './leaderboard'
 import submitCanvasTx from '../flow/transactions/submit-canvas.cdc?raw'
 
 export const useCanvasStore = defineStore('canvas', () => {
@@ -12,7 +12,7 @@ export const useCanvasStore = defineStore('canvas', () => {
 
     const isSubmitting = ref(false)
     const submissionError = ref(null)
-    const submissionSuccess = ref(false) // NEW: Success state
+    const submissionSuccess = ref(false) // This is the flag for the *first-time* success
 
     const isCanvasFull = computed(() => slot1Pin.value && slot2Pin.value && slot3Pin.value)
 
@@ -26,9 +26,9 @@ export const useCanvasStore = defineStore('canvas', () => {
         if (slotNumber === 1) slot1Pin.value = pin
         if (slotNumber === 2) slot2Pin.value = pin
         if (slotNumber === 3) slot3Pin.value = pin
-        // Clear errors/success when user changes a pin
+
         submissionError.value = null
-        submissionSuccess.value = false
+        submissionSuccess.value = false // Reset success message if they change a pin
     }
 
     const clearCanvas = () => {
@@ -46,25 +46,24 @@ export const useCanvasStore = defineStore('canvas', () => {
         submissionError.value = null
         submissionSuccess.value = false
 
-        // Get other stores to refresh them
         const questStore = useQuestStore()
         const leaderboardStore = useLeaderboardStore()
 
         try {
             const transactionId = await FlowService.mutate(submitCanvasTx, {
-                // Pin IDs must be strings for FCL Array(UInt64)
                 pinIDs: { type: 'Array(UInt64)', value: submissionPinIDs.value.map(String) }
             })
 
             await FlowService.onceSealed(transactionId)
 
-            // --- SUCCESS ---
-            submissionSuccess.value = true // Set success flag
-            // DO NOT CLEAR CANVAS
+            // --- UPDATED SUCCESS LOGIC ---
 
-            // Refresh state to lock the UI
-            await leaderboardStore.fetchLeaderboard() // See new submission
-            await questStore.fetchUsedPins() // See newly used pins
+            // 1. Fetch leaderboard and used pins FIRST to get the new score
+            await leaderboardStore.fetchLeaderboard()
+            await questStore.fetchUsedPins()
+
+            // 2. Set success flag LAST
+            submissionSuccess.value = true
 
         } catch (err) {
             console.error("Submission Failed:", err)
@@ -80,7 +79,7 @@ export const useCanvasStore = defineStore('canvas', () => {
         isCanvasFull,
         isSubmitting,
         submissionError,
-        submissionSuccess, // EXPORT
+        submissionSuccess,
         setPin,
         clearCanvas,
         submitCanvas

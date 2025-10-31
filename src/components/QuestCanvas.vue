@@ -3,7 +3,7 @@ import { onMounted, ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useQuestStore } from '../stores/quest'
 import { useCanvasStore } from '../stores/canvas'
-import { useLeaderboardStore } from '../stores/leaderboard' // 1. Import Leaderboard
+import { useLeaderboardStore } from '../stores/leaderboard'
 import PinSelectorModal from './PinSelectorModal.vue'
 
 // --- Modal State ---
@@ -25,7 +25,7 @@ const {
 } = storeToRefs(canvasStore)
 const { submitCanvas, setPin } = canvasStore
 
-// --- 2. Leaderboard Store ---
+// --- Leaderboard Store ---
 const leaderboardStore = useLeaderboardStore()
 const {
   hasUserSubmitted,
@@ -34,21 +34,19 @@ const {
 } = storeToRefs(leaderboardStore)
 const { fetchLeaderboard } = leaderboardStore
 
-// --- 3. Combined Loading State ---
+// --- Combined Loading State ---
 const isLoading = computed(() => isQuestLoading.value || isLeaderboardLoading.value)
 
-// 4. Computed value for "is submitted" state
+// Computed value for "is submitted" state
 const isLocked = computed(() => hasUserSubmitted.value || submissionSuccess.value)
 
 // --- Methods ---
 onMounted(() => {
-  // 5. Fetch all required data on load
   fetchQuest()
   fetchLeaderboard()
 })
 
 const openPinSelector = (slotNumber) => {
-  // Don't open modal if already submitted
   if (isLocked.value) return
 
   currentSlotNumber.value = slotNumber
@@ -65,7 +63,6 @@ const onPinSelected = (pin) => {
   isModalOpen.value = false
 }
 
-// 6. Get IDs for modal filtering
 const getUnavailablePinIDs = computed(() => {
   const ids = []
   if (currentSlotNumber.value !== 1 && slot1Pin.value) ids.push(slot1Pin.value.id.toString())
@@ -112,34 +109,34 @@ const getUnavailablePinIDs = computed(() => {
       </ul>
 
       <div class="slots-actions" v-if="!isLocked">
-        <button @click="openPinSelector(1)">
+        <button @click="openPinSelector(1)" :disabled="isSubmitting">
           {{ slot1Pin ? 'Change' : 'Select' }} Slot 1
         </button>
-        <button @click="openPinSelector(2)">
+        <button @click="openPinSelector(2)" :disabled="isSubmitting">
           {{ slot2Pin ? 'Change' : 'Select' }} Slot 2
         </button>
-        <button @click="openPinSelector(3)">
+        <button @click="openPinSelector(3)" :disabled="isSubmitting">
           {{ slot3Pin ? 'Change' : 'Select' }} Slot 3
         </button>
       </div>
 
       <div class="submit-action">
 
-        <div v-if="hasUserSubmitted" class="submission-status submitted">
-          You have already submitted for this quest!
+        <div v-if="submissionSuccess" class="submission-status success">
+          Submission Successful!
           <span>Your Score: {{ userScore }}</span>
         </div>
 
-        <div v-else-if="submissionSuccess" class="submission-status success">
-          Submission Successful!
-          <span>Your Score: 300</span>
+        <div v-else-if="hasUserSubmitted" class="submission-status submitted">
+          You have already submitted for this quest!
+          <span>Your Score: {{ userScore }}</span>
         </div>
 
         <button
             v-else
             class="submit-btn"
             @click="submitCanvas"
-            :disabled="!isCanvasFull || isSubmitting || isLocked"
+            :disabled="!isCanvasFull || isSubmitting"
         >
           {{ isSubmitting ? 'Submitting...' : 'Submit Canvas' }}
         </button>
@@ -282,7 +279,10 @@ const getUnavailablePinIDs = computed(() => {
   font-weight: normal;
   margin-top: 0.5rem;
 }
-.submission-status.success,
+.submission-status.success {
+  background-color: var(--vt-c-green);
+  color: var(--vt-c-black-soft);
+}
 .submission-status.submitted {
   background-color: var(--vt-c-green-light);
   color: var(--vt-c-black-soft);
