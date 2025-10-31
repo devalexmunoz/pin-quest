@@ -1,20 +1,21 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import * as fcl from '@onflow/fcl'
+import { onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useUserStore } from './stores/user' // Adjust path if needed
+
 import WalletConnect from './components/WalletConnect.vue'
 import QuestCanvas from './components/QuestCanvas.vue'
 import UserCollection from './components/UserCollection.vue'
 
-const currentUser = ref(null)
-const isSettingUp = ref(false)
+// 1. Get the store
+const userStore = useUserStore()
+// 2. Get state reactively
+const { isLoggedIn } = storeToRefs(userStore)
 
+// 3. On mount, subscribe to user changes.
+// This will automatically update the store's state.
 onMounted(() => {
-  fcl.currentUser.subscribe(user => {
-    currentUser.value = user
-    if (!user.loggedIn) {
-      isSettingUp.value = false
-    }
-  })
+  userStore.subscribe()
 })
 </script>
 
@@ -25,18 +26,14 @@ onMounted(() => {
   </header>
 
   <main>
-    <div v-if="!currentUser || !currentUser.loggedIn" className="logged-out-message">
+    <div v-if="!isLoggedIn" class="logged-out-message">
       <h2>Welcome</h2>
       <p>Please connect your Testnet wallet to begin.</p>
     </div>
 
-    <div v-if="currentUser && currentUser.loggedIn">
-      <QuestCanvas v-if="!isSettingUp"/>
-
-      <UserCollection
-          @setup:started="isSettingUp = true"
-          @setup:finished="isSettingUp = false"
-      />
+    <div v-if="isLoggedIn">
+      <QuestCanvas />
+      <UserCollection />
     </div>
   </main>
 </template>

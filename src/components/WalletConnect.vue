@@ -1,37 +1,31 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import * as fcl from '@onflow/fcl'
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '../stores/user' // Adjust path if needed
 
-const currentUser = ref(null)
+// 1. Get store
+const userStore = useUserStore()
 
-onMounted(() => {
-  fcl.currentUser.subscribe(user => {
-    currentUser.value = user
-  })
-})
+// 2. Get state reactively
+const { isLoggedIn, userAddress } = storeToRefs(userStore)
 
-const logIn = () => {
-  fcl.authenticate()
-}
-
-const logOut = () => {
-  fcl.unauthenticate()
-}
+// 3. Get actions
+const { logIn, logOut } = userStore
 </script>
 
 <template>
   <div>
-    <button v-if="!currentUser || !currentUser.loggedIn" @click="logIn">
+    <button v-if="!isLoggedIn" @click="logIn">
       Connect Wallet
     </button>
-    <div v-if="currentUser && currentUser.loggedIn" class="wallet-info">
-      <span>{{ currentUser.addr }}</span>
+    <div v-if="isLoggedIn" class="wallet-info">
+      <span>{{ userAddress }}</span>
       <button @click="logOut" class="logout-btn">Log Out</button>
     </div>
   </div>
 </template>
 
 <style scoped>
+/* Styles remain the same */
 .wallet-info {
   display: flex;
   align-items: center;

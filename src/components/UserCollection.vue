@@ -1,120 +1,50 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import * as fcl from '@onflow/fcl'
+import { onMounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useCollectionStore } from '../stores/collection' // Adjust path
+import { useUserStore } from '../stores/user' // Adjust path
 
-import getPinsScript from '../flow/scripts/get-user-pins.cdc?raw'
-import checkCollectionScript from '../flow/scripts/check-pinnacle-collection.cdc?raw'
-import setupCollectionTx from '../flow/transactions/setup-pinnacle-collection.cdc?raw'
-import mintBatchTx from '../flow/transactions/mint-test-pins.cdc?raw'
-import prettierPinData from '../../test-pins.json'
+// 1. Get Stores
+const collectionStore = useCollectionStore()
+const userStore = useUserStore()
 
-const pins = ref([])
-const isLoading = ref(false)
-const loadingMessage = ref("Loading pins...")
-const currentUser = ref(null)
+// 2. Get state reactively
+const { allPins, isLoading, loadingMessage } = storeToRefs(collectionStore)
+const { userAddress } = storeToRefs(userStore)
 
-const emit = defineEmits(['setup:started', 'setup:finished'])
+// 3. Get actions
+const { checkCollection, fetchPins, setupDemoWallet } = collectionStore
 
-const runTx = async (cadence, args) => {
-  const transactionId = await fcl.mutate({
-    cadence: cadence,
-    args: args,
-    limit: 9999
-  })
-  return fcl.tx(transactionId).onceSealed()
-}
-
-const checkCollection = async (address) => {
-  try {
-    return await fcl.query({
-      cadence: checkCollectionScript,
-      args: (arg, t) => [arg(address, t.Address)]
-    });
-  } catch (err) {
-    console.error("Failed to check collection", err);
-    return false;
-  }
-}
-
-const fetchPins = async (address) => {
+// 4. This function handles loading all user data
+const loadUserData = async (address) => {
   if (!address) {
-    pins.value = []
-    return 0
+    allPins.value = [] // Clear pins on logout
+    return
   }
 
-  isLoading.value = true
-  loadingMessage.value = "Loading your pins..."
-  try {
-    const response = await fcl.query({
-      cadence: getPinsScript,
-      args: (arg, t) => [arg(address, t.Address)]
-    })
-    pins.value = response
-    isLoading.value = false
-    return response.length
-  } catch (err) {
-    console.error("Failed to fetch pins:", err)
-    isLoading.value = false
-    return 0
+  // User is logged in, check their collection
+  const hasCollection = await checkCollection(address)
+
+  if (hasCollection) {
+    // They have a collection, fetch their pins
+    await fetchPins(address)
+  } else {
+    // No collection, run the demo setup
+    await setupDemoWallet()
   }
 }
 
-const setupDemoWallet = async () => {
-  emit('setup:started')
-  isLoading.value = true
-  try {
-    loadingMessage.value = "Setting up new collection..."
-    await runTx(setupCollectionTx)
+// 5. Watch for the user to log in or out
+watch(userAddress, (newAddress) => {
+  loadUserData(newAddress)
+})
 
-    loadingMessage.value = "Minting test pins..."
-    const pinData = {
-      characters: prettierPinData.map(p => p.character),
-      franchises: prettierPinData.map(p => p.franchise),
-      materials: prettierPinData.map(p => p.material),
-      studios: prettierPinData.map(p => p.studio),
-      realRenderIDs: prettierPinData.map(p => p.renderID)
-    }
-    await runTx(mintBatchTx, (arg, t) => [
-      arg(pinData.characters, t.Array(t.String)),
-      arg(pinData.franchises, t.Array(t.Array(t.String))),
-      arg(pinData.materials, t.Array(t.Array(t.String))),
-      arg(pinData.studios, t.Array(t.Array(t.String))),
-      arg(pinData.realRenderIDs, t.Array(t.String))
-    ])
-
-    loadingMessage.value = "Loading new pins..."
-    await fetchPins(currentUser.value.addr)
-
-  } catch (err) {
-    console.error("Demo Setup Failed:", err)
-    loadingMessage.value = "Demo setup failed. Please try again."
-  }
-  isLoading.value = false
-  emit('setup:finished')
-}
-
-
+// 6. Also run on initial component mount
+// (in case the user is already logged in on page load)
 onMounted(() => {
-  fcl.currentUser.subscribe(async (user) => {
-    currentUser.value = user
-    if (user && user.loggedIn) {
-      const collectionExists = await checkCollection(user.addr);
-
-      if (!collectionExists) {
-        const network = import.meta.env.VITE_FLOW_NETWORK
-        if (network === 'testnet') {
-          await setupDemoWallet()
-        } else {
-          pins.value = []
-        }
-      } else {
-        await fetchPins(user.addr);
-      }
-
-    } else {
-      pins.value = []
-    }
-  })
+  if (userAddress.value) {
+    loadUserData(userAddress.value)
+  }
 })
 </script>
 
@@ -127,21 +57,22 @@ onMounted(() => {
       <div class="spinner"></div>
     </div>
 
-    <div v-if="pins.length > 0 && !isLoading" class="pin-grid">
-      <div v-for="pin in pins" :key="pin.id" class="pin-card">
+    <div v-if="allPins.length > 0 && !isLoading" class="pin-grid">
+      <div v-for="pin in allPins" :key="pin.id" class="pin-card">
         <img :src="pin.thumbnail" :alt="pin.name" />
         <p>{{ pin.name }}</p>
         <span>ID: {{ pin.id }}</span>
       </div>
     </div>
 
-    <div v-if="pins.length === 0 && !isLoading">
+    <div v-if="allPins.length === 0 && !isLoading">
       You have no pins in your collection.
     </div>
   </div>
 </template>
 
 <style scoped>
+/* Styles remain the same */
 .collection-container {
   background-color: var(--vt-c-black-soft);
   border: 1px solid var(--vt-c-divider-dark-2);

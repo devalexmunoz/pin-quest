@@ -37,10 +37,12 @@ access(all) contract PinQuest {
         access(all) fun startNewDailyQuest()
     }
 
-    access(all) fun submitCanvas(pinIDs: [UInt64], signerAddress: Address) {
+    access(all) fun submitCanvas(pinIDs: [UInt64], signer: auth(Capabilities) &Account) {
+        let signerAddress = signer.address
+
         assert(pinIDs.length == 3, message: "You must submit exactly 3 pins")
 
-        let collectionRef = getAccount(signerAddress).capabilities
+        let collectionRef = signer.capabilities
             .borrow<&{NonFungibleToken.CollectionPublic, ViewResolver.ResolverCollection}>(
                 Pinnacle.CollectionPublicPath
             ) ?? panic("Could not borrow Pinnacle Collection capability implementing required interfaces.")

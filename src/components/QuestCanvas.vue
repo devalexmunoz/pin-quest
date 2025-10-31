@@ -1,54 +1,108 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import * as fcl from '@onflow/fcl'
-import getQuestScript from '../flow/scripts/get-current-quest.cdc?raw'
+import { onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useQuestStore } from '../stores/quest'
+import { useCanvasStore } from '../stores/canvas'
+import PinSelectorModal from './PinSelectorModal.vue' // 1. Import the modal
 
-const quest = ref(null)
-const isLoading = ref(true)
-const error = ref(null)
+// --- Modal State ---
+const isModalOpen = ref(false)
+const currentSlotNumber = ref(1)
+const currentRequirement = ref("Any")
 
-const fetchQuest = async () => {
-  isLoading.value = true
-  error.value = null
-  try {
-    const response = await fcl.query({
-      cadence: getQuestScript
-    })
-    quest.value = response
-  } catch (err) {
-    console.error("Failed to fetch quest:", err)
-    error.value = err.message
-  }
-  isLoading.value = false
-}
+// --- Quest Store ---
+const questStore = useQuestStore()
+const { currentQuest, isLoading } = storeToRefs(questStore)
+const { fetchQuest } = questStore
 
+// --- Canvas Store ---
+const canvasStore = useCanvasStore()
+const { slot1Pin, slot2Pin, slot3Pin, isSubmitting, isCanvasFull } = storeToRefs(canvasStore)
+const { submitCanvas, setPin } = canvasStore // 2. Import 'setPin'
+
+// --- Methods ---
 onMounted(() => {
   fetchQuest()
 })
+
+// 3. This method now opens the modal
+const openPinSelector = (slotNumber) => {
+  currentSlotNumber.value = slotNumber
+  // Set the requirement based on the slot
+  if (slotNumber === 1) currentRequirement.value = currentQuest.value.slot1_requirement
+  if (slotNumber === 2) currentRequirement.value = currentQuest.value.slot2_requirement
+  if (slotNumber === 3) currentRequirement.value = currentQuest.value.slot3_requirement
+  isModalOpen.value = true
+}
+
+// 4. This method handles the modal's 'pin-selected' event
+const onPinSelected = (pin) => {
+  setPin(currentSlotNumber.value, pin)
+  isModalOpen.value = false
+}
 </script>
 
 <template>
   <div class="quest-canvas">
     <div class="header">
-      <h2>Daily Quest</h2>
-      <button @click="fetchQuest" :disabled="isLoading">Refresh</button>
     </div>
 
     <div v-if="isLoading" class="loading">Loading Quest...</div>
-    <div v-if="error" class="error">Error fetching quest.</div>
 
-    <div v-if="quest" class="quest-details">
-      <h3>Quest ID: {{ quest.questID }}</h3>
+    <div v-if="currentQuest" class="quest-details">
+      <h3>Quest ID: {{ currentQuest.questID }}</h3>
+
       <ul class="slots">
-        <li><span>Slot 1</span> {{ quest.slot1_requirement }}</li>
-        <li><span>Slot 2</span> {{ quest.slot2_requirement }}</li>
-        <li><span>Slot 3</span> {{ quest.slot3_requirement }}</li>
+        <li>
+          <span>Slot 1</span> {{ currentQuest.slot1_requirement }}
+          <div class="selected-pin" v-if="slot1Pin">
+            <img :src="slot1Pin.thumbnail" />
+            {{ slot1Pin.name }}
+          </div>
+        </li>
+        <li>
+          <span>Slot 2</span> {{ currentQuest.slot2_requirement }}
+          <div class="selected-pin" v-if="slot2Pin">
+            <img :src="slot2Pin.thumbnail" />
+            {{ slot2Pin.name }}
+          </div>
+        </li>
+        <li>
+          <span>Slot 3</span> {{ currentQuest.slot3_requirement }}
+          <div class="selected-pin" v-if="slot3Pin">
+            <img :src="slot3Pin.thumbnail" />
+            {{ slot3Pin.name }}
+          </div>
+        </li>
       </ul>
+
+      <div class="slots-actions">
+        <button @click="openPinSelector(1)">
+          {{ slot1Pin ? 'Change' : 'Select' }} Slot 1
+        </button>
+        <button @click="openPinSelector(2)">
+          {{ slot2Pin ? 'Change' : 'Select' }} Slot 2
+        </button>
+        <button @click="openPinSelector(3)">
+          {{ slot3Pin ? 'Change' : 'Select' }} Slot 3
+        </button>
+      </div>
+
+      <div class="submit-action">
+      </div>
     </div>
   </div>
+
+  <PinSelectorModal
+      :show="isModalOpen"
+      :requirement="currentRequirement"
+      @close="isModalOpen = false"
+      @pin-selected="onPinSelected"
+  />
 </template>
 
 <style scoped>
+/* ... (keep old styles) ... */
 .quest-canvas {
   background-color: var(--vt-c-black-soft);
   border: 1px solid var(--vt-c-divider-dark-2);
@@ -79,7 +133,8 @@ onMounted(() => {
 .slots {
   list-style-type: none;
   padding: 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 }
 .slots li {
@@ -90,6 +145,10 @@ onMounted(() => {
   border: 1px solid var(--vt-c-divider-dark-2);
   font-size: 1.2rem;
   font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100px;
 }
 .slots li span {
   display: block;
@@ -97,5 +156,57 @@ onMounted(() => {
   font-weight: 300;
   color: var(--vt-c-green-light);
   margin-bottom: 0.25rem;
+}
+.selected-pin {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--vt-c-green);
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--vt-c-divider-dark-1);
+  padding-top: 0.5rem;
+  word-wrap: break-word;
+}
+.slots-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.slots-actions button {
+  flex: 1;
+}
+.submit-action {
+  margin-top: 1.5rem;
+  text-align: right;
+}
+.submit-btn {
+  background-color: var(--vt-c-green);
+  color: var(--vt-c-black-soft);
+  font-size: 1.1rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: bold;
+}
+.submit-btn:disabled {
+  background-color: var(--vt-c-divider-dark-1);
+  color: var(--vt-c-text-dark-2);
+  cursor: not-allowed;
+}
+.selected-pin {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--vt-c-green);
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--vt-c-divider-dark-1);
+  padding-top: 0.5rem;
+  word-wrap: break-word;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.selected-pin img {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: var(--vt-c-black);
 }
 </style>
