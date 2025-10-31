@@ -7,21 +7,18 @@ access(all) struct PinTrait {
     access(all) let name: String
     access(all) let value: AnyStruct
     access(all) let displayType: String?
-
     init(name: String, value: AnyStruct, displayType: String?) {
         self.name = name
         self.value = value
         self.displayType = displayType
     }
 }
-
 access(all) struct PinMetadata {
     access(all) let id: UInt64
     access(all) let name: String
     access(all) let description: String
     access(all) let thumbnail: String
     access(all) let traits: [PinTrait]
-
     init(id: UInt64, name: String, description: String, thumbnail: String, traits: [PinTrait]) {
         self.id = id
         self.name = name
@@ -32,33 +29,42 @@ access(all) struct PinMetadata {
 }
 
 access(all) fun main(address: Address): [PinMetadata] {
+    let pins: [PinMetadata] = []
     let account = getAccount(address)
 
-    let collectionCap = account.capabilities.borrow<&Pinnacle.Collection>(
+    let collectionCap = account.capabilities.get<&Pinnacle.Collection>(
             Pinnacle.CollectionPublicPath
-        ) ?? panic("Could not borrow Pinnacle Collection capability.")
+        )
 
-    let ids = collectionCap.getIDs()
-    let pins: [PinMetadata] = []
+    if collectionCap == nil {
+        return pins
+    }
+
+    let collectionRef = collectionCap!.borrow()
+
+    if collectionRef == nil {
+        return pins
+    }
+
+    let ids = collectionRef!.getIDs()
 
     for id in ids {
-        let resolverRef = collectionCap.borrowViewResolver(id: id)
-            ?? panic("Could not borrow ViewResolver for NFT ".concat(id.toString()))
+        let resolverRef = collectionRef!.borrowViewResolver(id: id)
+            ?? panic("Could not borrow ViewResolver")
 
         let displayView = MetadataViews.getDisplay(resolverRef)!
         let traitsView = MetadataViews.getTraits(resolverRef)!
 
         var pinTraits: [PinTrait] = []
-
         for trait in traitsView.traits {
              pinTraits.append(PinTrait(name: trait.name, value: trait.value, displayType: trait.displayType))
         }
 
-        let nftRef = collectionCap.borrowPinNFT(id: id)
+        let nftRef = collectionRef!.borrowPinNFT(id: id)
             ?? panic("Could not borrow PinNFT reference")
         let renderID = nftRef.renderID
 
-        let thumbnailURL = "https.assets.disneypinnacle.com/render/".concat(renderID).concat("/front.png")
+        let thumbnailURL = "https://assets.disneypinnacle.com/render/".concat(renderID).concat("/front.png")
 
         pins.append(
             PinMetadata(

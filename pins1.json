@@ -1,0 +1,77 @@
+[
+	{
+		"type": "Array",
+		"value": [
+			{"type": "String", "value": "Luke Skywalker"},
+			{"type": "String", "value": "R2-D2"},
+			{"type": "String", "value": "Darth Vader"},
+			{"type": "String", "value": "Mickey Mouse"},
+			{"type": "String", "value": "Woody"},
+			{"type": "String", "value": "Buzz Lightyear"},
+			{"type": "String", "value": "Ariel"},
+			{"type": "String", "value": "Jasmine"},
+			{"type": "String", "value": "Elsa"},
+			{"type": "String", "value": "Anna"}
+		]
+	},
+	{
+		"type": "Array",
+		"value": [
+			{"type": "Array", "value": [{"type": "String", "value": "Star Wars"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Star Wars"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Star Wars"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Mickey & Friends"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Toy Story"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Toy Story"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Disney Princess"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Disney Princess"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Frozen"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Frozen"}]}
+		]
+	},
+	{
+		"type": "Array",
+		"value": [
+			{"type": "Array", "value": [{"type": "String", "value": "Metal"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Metal"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Digital Gold"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Ink"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Plastic"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Plastic"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Fabric"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Fabric"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Ice"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Ice"}]}
+		]
+	},
+	{
+		"type": "Array",
+		"value": [
+			{"type": "Array", "value": [{"type": "String", "value": "Lucasfilm Ltd."}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Lucasfilm Ltd."}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Lucasfilm Ltd."}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Walt Disney Animation Studios"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Pixar Animation Studios"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Pixar Animation Studios"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Walt Disney Animation Studios"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Walt Disney Animation Studios"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Walt Disney Animation Studios"}]},
+			{"type": "Array", "value": [{"type": "String", "value": "Walt Disney Animation Studios"}]}
+		]
+	},
+	{
+		"type": "Array",
+		"value": [
+			{"type": "String", "value": "OEV1-SWSA-LUKE-S5"},
+			{"type": "String", "value": "OEV1-SWSA-R2D2-S5"},
+			{"type": "String", "value": "OEV1-SWSA-DART-S5"},
+			{"type": "String", "value": "SEV1-MNF-MICK-S1"},
+			{"type": "String", "value": "OEV1-TOYS-WOOD-S5"},
+			{"type": "String", "value": "OEV1-TOYS-BUZZ-S5"},
+			{"type": "String", "value": "OEV1-PRIN-ARIE-S5"},
+			{"type": "String", "value": "OEV1-PRIN-JASM-S5"},
+			{"type": "String", "value": "LEV1-FROZ-ELSA-S6"},
+			{"type": "String", "value": "LEV1-FROZ-ANNA-S6"}
+		]
+	}
+]

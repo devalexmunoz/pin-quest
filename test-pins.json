@@ -1,77 +1,72 @@
 [
 	{
-		"type": "Array",
-		"value": [
-			{"type": "String", "value": "Luke Skywalker"},
-			{"type": "String", "value": "R2-D2"},
-			{"type": "String", "value": "Darth Vader"},
-			{"type": "String", "value": "Mickey Mouse"},
-			{"type": "String", "value": "Woody"},
-			{"type": "String", "value": "Buzz Lightyear"},
-			{"type": "String", "value": "Ariel"},
-			{"type": "String", "value": "Jasmine"},
-			{"type": "String", "value": "Elsa"},
-			{"type": "String", "value": "Anna"}
-		]
+		"character": "Luke Skywalker",
+		"franchise": ["Star Wars"],
+		"material": ["Fabric"],
+		"studio": ["Lucasfilm Ltd."],
+		"renderID": "OEV1-SWSA-LUKE-S5"
 	},
 	{
-		"type": "Array",
-		"value": [
-			{"type": "Array", "value": [{"type": "String", "value": "Star Wars"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Star Wars"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Star Wars"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Mickey & Friends"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Toy Story"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Toy Story"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Disney Princess"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Disney Princess"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Frozen"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Frozen"}]}
-		]
+		"character": "R2-D2",
+		"franchise": ["Star Wars"],
+		"material": ["Metal"],
+		"studio": ["Lucasfilm Ltd."],
+		"renderID": "OEV1-SWSA-R2D2-S5"
 	},
 	{
-		"type": "Array",
-		"value": [
-			{"type": "Array", "value": [{"type": "String", "value": "Metal"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Metal"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Digital Gold"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Ink"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Plastic"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Plastic"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Fabric"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Fabric"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Ice"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Ice"}]}
-		]
+		"character": "Darth Vader",
+		"franchise": ["Star Wars"],
+		"material": ["Digital Gold"],
+		"studio": ["Lucasfilm Ltd."],
+		"renderID": "OEV1-SWSA-DART-S5"
 	},
 	{
-		"type": "Array",
-		"value": [
-			{"type": "Array", "value": [{"type": "String", "value": "Lucasfilm Ltd."}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Lucasfilm Ltd."}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Lucasfilm Ltd."}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Walt Disney Animation Studios"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Pixar Animation Studios"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Pixar Animation Studios"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Walt Disney Animation Studios"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Walt Disney Animation Studios"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Walt Disney Animation Studios"}]},
-			{"type": "Array", "value": [{"type": "String", "value": "Walt Disney Animation Studios"}]}
-		]
+		"character": "Mickey Mouse",
+		"franchise": ["Mickey & Friends"],
+		"material": ["Ink"],
+		"studio": ["Walt Disney Animation Studios"],
+		"renderID": "SEV1-MNF-MICK-S1"
 	},
 	{
-		"type": "Array",
-		"value": [
-			{"type": "String", "value": "OEV1-SWSA-LUKE-S5"},
-			{"type": "String", "value": "OEV1-SWSA-R2D2-S5"},
-			{"type": "String", "value": "OEV1-SWSA-DART-S5"},
-			{"type": "String", "value": "SEV1-MNF-MICK-S1"},
-			{"type": "String", "value": "OEV1-TOYS-WOOD-S5"},
-			{"type": "String", "value": "OEV1-TOYS-BUZZ-S5"},
-			{"type": "String", "value": "OEV1-PRIN-ARIE-S5"},
-			{"type": "String", "value": "OEV1-PRIN-JASM-S5"},
-			{"type": "String", "value": "LEV1-FROZ-ELSA-S6"},
-			{"type": "String", "value": "LEV1-FROZ-ANNA-S6"}
-		]
+		"character": "Woody",
+		"franchise": ["Toy Story"],
+		"material": ["Plastic"],
+		"studio": ["Pixar Animation Studios"],
+		"renderID": "OEV1-TOYS-WOOD-S5"
+	},
+	{
+		"character": "Buzz Lightyear",
+		"franchise": ["Toy Story"],
+		"material": ["Plastic"],
+		"studio": ["Pixar Animation Studios"],
+		"renderID": "OEV1-TOYS-BUZZ-S5"
+	},
+	{
+		"character": "Ariel",
+		"franchise": ["Disney Princess"],
+		"material": ["Seashell"],
+		"studio": ["Walt Disney Animation Studios"],
+		"renderID": "OEV1-PRIN-ARIE-S5"
+	},
+	{
+		"character": "Jasmine",
+		"franchise": ["Disney Princess"],
+		"material": ["Fabric"],
+		"studio": ["Walt Disney Animation Studios"],
+		"renderID": "OEV1-PRIN-JASM-S5"
+	},
+	{
+		"character": "Elsa",
+		"franchise": ["Frozen"],
+		"material": ["Ice"],
+		"studio": ["Walt Disney Animation Studios"],
+		"renderID": "LEV1-FROZ-ELSA-S6"
+	},
+	{
+		"character": "Anna",
+		"franchise": ["Frozen"],
+		"material": ["Fabric"],
+		"studio": ["Walt Disney Animation Studios"],
+		"renderID": "LEV1-FROZ-ANNA-S6"
 	}
 ]

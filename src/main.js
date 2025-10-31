@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
+import './assets/main.css'
 
 // 1. Import your new init function
 import { init } from './flow/init.js'
