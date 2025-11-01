@@ -24,7 +24,7 @@ onMounted(() => {
 
 <template>
   <header>
-    <h1>Pinnacle Quest</h1>
+    <h1>Pinnacle PinQuest</h1>
     <WalletConnect/>
   </header>
 
