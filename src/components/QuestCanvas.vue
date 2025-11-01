@@ -11,12 +11,11 @@ const isModalOpen = ref(false)
 const currentSlotNumber = ref(1)
 const currentRequirement = ref("Any")
 
-// --- Quest Store ---
+// --- Stores ---
 const questStore = useQuestStore()
 const { currentQuest, isLoading: isQuestLoading } = storeToRefs(questStore)
 const { fetchQuest } = questStore
 
-// --- Canvas Store ---
 const canvasStore = useCanvasStore()
 const {
   slot1Pin, slot2Pin, slot3Pin,
@@ -25,7 +24,6 @@ const {
 } = storeToRefs(canvasStore)
 const { submitCanvas, setPin } = canvasStore
 
-// --- Leaderboard Store ---
 const leaderboardStore = useLeaderboardStore()
 const {
   hasUserSubmitted,
@@ -34,18 +32,15 @@ const {
 } = storeToRefs(leaderboardStore)
 const { fetchLeaderboard } = leaderboardStore
 
-// --- Combined Loading State ---
+// --- Computed ---
 const isLoading = computed(() => isQuestLoading.value || isLeaderboardLoading.value)
 const isLocked = computed(() => hasUserSubmitted.value || submissionSuccess.value)
 
 // --- Methods ---
 onMounted(() => {
-  // Call fetchQuest for the *initial* load (isUpdate = false)
   fetchQuest(false)
   fetchLeaderboard()
 })
-
-// handleManualRefresh function is REMOVED
 
 const openPinSelector = (slotNumber) => {
   if (isLocked.value) return
@@ -81,41 +76,78 @@ const getUnavailablePinIDs = computed(() => {
     <div v-if="isLoading" class="loading">Loading Quest...</div>
 
     <div v-if="currentQuest && !isLoading" class="quest-details">
+
       <ul class="slots">
-        <li>
-          <span>Slot 1</span> {{ currentQuest.slot1_requirement }}
-          <div class="selected-pin" v-if="slot1Pin">
-            <img :src="slot1Pin.thumbnail" />
-            {{ slot1Pin.name }}
+
+        <li :class="{ 'is-filled': !!slot1Pin, 'is-locked': isLocked }">
+          <div class="slot-header">
+            <span>Slot 1</span>
+            <div class="requirement-text">Pin requirement: <strong>{{ currentQuest.slot1_requirement }}</strong></div>
+          </div>
+
+          <div v-if="!slot1Pin" class="slot-empty" @click="openPinSelector(1)">
+            <button class="select-pin-btn" :disabled="isSubmitting || isLocked">
+              Select Pin 1
+            </button>
+          </div>
+
+          <div v-if="slot1Pin" class="slot-filled">
+            <div class="selected-pin">
+              <img :src="slot1Pin.thumbnail" :alt="slot1Pin.name" />
+              <p>{{ slot1Pin.name }}</p>
+            </div>
+            <button class="change-pin-btn" @click="openPinSelector(1)" :disabled="isSubmitting || isLocked">
+              Change
+            </button>
           </div>
         </li>
-        <li>
-          <span>Slot 2</span> {{ currentQuest.slot2_requirement }}
-          <div class="selected-pin" v-if="slot2Pin">
-            <img :src="slot2Pin.thumbnail" />
-            {{ slot2Pin.name }}
+
+        <li :class="{ 'is-filled': !!slot2Pin, 'is-locked': isLocked }">
+          <div class="slot-header">
+            <span>Slot 2</span>
+            <div class="requirement-text">Pin requirement: <strong>{{ currentQuest.slot2_requirement }}</strong></div>
+          </div>
+
+          <div v-if="!slot2Pin" class="slot-empty" @click="openPinSelector(2)">
+            <button class="select-pin-btn" :disabled="isSubmitting || isLocked">
+              Select Pin 2
+            </button>
+          </div>
+
+          <div v-if="slot2Pin" class="slot-filled">
+            <div class="selected-pin">
+              <img :src="slot2Pin.thumbnail" :alt="slot2Pin.name" />
+              <p>{{ slot2Pin.name }}</p>
+            </div>
+            <button class="change-pin-btn" @click="openPinSelector(2)" :disabled="isSubmitting || isLocked">
+              Change
+            </button>
           </div>
         </li>
-        <li>
-          <span>Slot 3</span> {{ currentQuest.slot3_requirement }}
-          <div class="selected-pin" v-if="slot3Pin">
-            <img :src="slot3Pin.thumbnail" />
-            {{ slot3Pin.name }}
+
+        <li :class="{ 'is-filled': !!slot3Pin, 'is-locked': isLocked }">
+          <div class="slot-header">
+            <span>Slot 3</span>
+            <div class="requirement-text">Pin requirement: <strong>{{ currentQuest.slot3_requirement }}</strong></div>
+          </div>
+
+          <div v-if="!slot3Pin" class="slot-empty" @click="openPinSelector(3)">
+            <button class="select-pin-btn" :disabled="isSubmitting || isLocked">
+              Select Pin 3
+            </button>
+          </div>
+
+          <div v-if="slot3Pin" class="slot-filled">
+            <div class="selected-pin">
+              <img :src="slot3Pin.thumbnail" :alt="slot3Pin.name" />
+              <p>{{ slot3Pin.name }}</p>
+            </div>
+            <button class="change-pin-btn" @click="openPinSelector(3)" :disabled="isSubmitting || isLocked">
+              Change
+            </button>
           </div>
         </li>
       </ul>
-
-      <div class="slots-actions" v-if="!isLocked">
-        <button @click="openPinSelector(1)" :disabled="isSubmitting">
-          {{ slot1Pin ? 'Change' : 'Select' }} Slot 1
-        </button>
-        <button @click="openPinSelector(2)" :disabled="isSubmitting">
-          {{ slot2Pin ? 'Change' : 'Select' }} Slot 2
-        </button>
-        <button @click="openPinSelector(3)" :disabled="isSubmitting">
-          {{ slot3Pin ? 'Change' : 'Select' }} Slot 3
-        </button>
-      </div>
 
       <div class="submit-action">
 
@@ -135,7 +167,7 @@ const getUnavailablePinIDs = computed(() => {
             @click="submitCanvas"
             :disabled="!isCanvasFull || isSubmitting"
         >
-          {{ isSubmitting ? 'Submitting...' : 'Submit Canvas' }}
+          {{ isSubmitting ? 'Submitting...' : 'Submit Quest' }}
         </button>
 
         <div v-if="submissionError" class="submission-status error">
@@ -158,119 +190,169 @@ const getUnavailablePinIDs = computed(() => {
 .quest-canvas {
   background-color: var(--vt-c-black-soft);
   border: 1px solid var(--vt-c-divider-dark-2);
-  padding: 1.5rem;
-  border-radius: 12px;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--vt-c-divider-dark-1);
+  padding-bottom: 1rem;
 }
 .header h2 {
   color: var(--vt-c-text-dark-1);
-}
-.header button {
-  font-size: 0.9rem;
-  padding: 6px 12px;
-  background-color: var(--vt-c-indigo);
-  color: var(--vt-c-white-soft);
+  font-size: 1.8rem;
+  margin: 0;
 }
 .loading {
   color: var(--vt-c-text-dark-2);
   text-align: center;
   padding: 2rem;
 }
-
-.error {
-  color: var(--vt-c-yellow);
-}
 .slots {
   list-style-type: none;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  gap: 1.5rem;
 }
+
+/* NEW "DROP ZONE" STYLES */
 .slots li {
-  flex: 1;
   background: var(--vt-c-black-mute);
+  border: 2px dashed var(--vt-c-divider-dark-2);
+  border-radius: 12px;
   padding: 1rem;
-  border-radius: 8px;
-  border: 1px solid var(--vt-c-divider-dark-2);
-  font-size: 1.2rem;
-  font-weight: 500;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-height: 100px;
+  min-height: 220px;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+.slots li.is-filled {
+  border-style: solid;
+  border-color: var(--vt-c-green);
+  background: var(--vt-c-black-soft);
+}
+.slots li.is-locked {
+  border-color: var(--vt-c-divider-dark-2);
+  background: var(--vt-c-black-mute);
+}
+.slot-header {
+  flex-shrink: 0;
 }
 .slots li span {
   display: block;
   font-size: 0.9rem;
   font-weight: 300;
-  color: var(--vt-c-green-light);
-  margin-bottom: 0.25rem;
+  color: var(--vt-c-green);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.requirement-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--vt-c-white-soft);
+}
+.requirement-text strong{
+  font-size: 1.3rem;
+  color: var(--vt-c-green);
+  font-weight: 600;
+  display: block;
+}
+.slot-empty {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 8px;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  margin-top: 1rem;
+}
+.slot-empty:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+.select-pin-btn {
+  padding: 10px 20px;
+  background-color: var(--vt-c-indigo);
+  color: var(--vt-c-white-soft);
+  border-radius: 8px;
+  font-weight: 500;
+}
+.select-pin-btn:hover {
+  background-color: #4a5d7c;
+}
+.slot-filled {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  margin-top: 1rem;
 }
 .selected-pin {
   font-size: 0.9rem;
   font-weight: bold;
-  color: var(--vt-c-green);
-  margin-top: 0.5rem;
-  border-top: 1px solid var(--vt-c-divider-dark-1);
-  padding-top: 0.5rem;
+  color: var(--vt-c-green-light);
   word-wrap: break-word;
 }
-.slots-actions {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  margin-top: 1.5rem;
+.selected-pin img {
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  background: var(--vt-c-black);
+  object-fit: contain;
+  margin-bottom: 0.5rem;
 }
-.slots-actions button {
-  flex: 1;
+.change-pin-btn {
+  background: none;
+  border: 1px solid var(--vt-c-text-dark-2);
+  color: var(--vt-c-text-dark-2);
+  font-size: 0.9rem;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-top: 1rem;
 }
+.change-pin-btn:hover {
+  background: var(--vt-c-black-soft);
+  color: var(--vt-c-white);
+}
+
+/* REMOVED .slots-actions */
+
 .submit-action {
-  margin-top: 1.5rem;
-  text-align: right;
+  margin-top: 2.5rem;
+  text-align: center;
 }
 .submit-btn {
   background-color: var(--vt-c-green);
   color: var(--vt-c-black-soft);
-  font-size: 1.1rem;
-  padding: 0.75rem 1.5rem;
+  font-size: 1.2rem;
+  padding: 1rem 2.5rem;
   font-weight: bold;
+  border-radius: 10px;
+  min-width: 250px;
 }
 .submit-btn:disabled {
   background-color: var(--vt-c-divider-dark-1);
   color: var(--vt-c-text-dark-2);
   cursor: not-allowed;
+  box-shadow: none;
 }
-.selected-pin {
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: var(--vt-c-green);
-  margin-top: 0.5rem;
-  border-top: 1px solid var(--vt-c-divider-dark-1);
-  padding-top: 0.5rem;
-  word-wrap: break-word;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.selected-pin img {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  border-radius: 4px;
-  background: var(--vt-c-black);
-}
-
 .submission-status {
   font-size: 1.2rem;
   font-weight: bold;
   padding: 1.5rem;
   border-radius: 10px;
+  max-width: 600px;
+  margin: 0 auto;
 }
 .submission-status span {
   display: block;
@@ -287,7 +369,7 @@ const getUnavailablePinIDs = computed(() => {
   color: var(--vt-c-black-soft);
 }
 .submission-status.error {
-  background-color: #aa2222; /* Add a dark red */
+  background-color: #aa2222;
   color: var(--vt-c-white-soft);
   font-size: 1rem;
   font-weight: normal;

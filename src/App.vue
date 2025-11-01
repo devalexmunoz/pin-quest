@@ -2,18 +2,19 @@
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from './stores/user'
-import { useQuestStore } from './stores/quest' // 1. Import quest store
+import { useQuestStore } from './stores/quest'
 
 import WalletConnect from './components/WalletConnect.vue'
 import QuestStatus from './components/QuestStatus.vue'
 import QuestCanvas from './components/QuestCanvas.vue'
 import UserCollection from './components/UserCollection.vue'
 import Leaderboard from './components/Leaderboard.vue'
+import ScoreInfo from './components/ScoreInfo.vue' // We'll add this next
+import LandingPage from './components/LandingPage.vue' // 1. IMPORT
 
 const userStore = useUserStore()
 const { isLoggedIn } = storeToRefs(userStore)
 
-// 2. Get isUpdating flag
 const questStore = useQuestStore()
 const { isUpdating } = storeToRefs(questStore)
 
@@ -35,28 +36,22 @@ onMounted(() => {
       <span>(This is a live Forte job update!)</span>
     </div>
 
-    <div v-if="!isLoggedIn" class="logged-out-message">
-      <h2>Welcome</h2>
-      <p>Please connect your Testnet wallet to begin.</p>
+    <div v-if="!isLoggedIn">
+      <LandingPage />
     </div>
 
     <div v-if="isLoggedIn">
       <QuestStatus />
       <QuestCanvas />
       <Leaderboard />
+      <ScoreInfo />
       <UserCollection />
     </div>
   </main>
 </template>
 
 <style scoped>
-.logged-out-message {
-  text-align: center;
-  color: #ccc;
-  padding: 3rem;
-  background-color: var(--vt-c-black-soft);
-  border-radius: 12px;
-}
+/* 3. REMOVED .logged-out-message styles */
 
 .update-overlay {
   position: fixed;

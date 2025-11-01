@@ -116,7 +116,7 @@ onUnmounted(() => {
   gap: 1.5rem;
   background-color: var(--vt-c-black-mute);
   border: 1px solid var(--vt-c-divider-dark-2);
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   border-radius: 12px;
   margin-bottom: 2rem;
 }

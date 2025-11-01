@@ -50,7 +50,7 @@ onMounted(() => {
 
 <template>
   <div class="collection-container">
-    <h2>Your Pins</h2>
+    <h2>Your Pin Collection</h2>
 
     <div v-if="isLoading" class="loading-state">
       <p>{{ loadingMessage }}</p>

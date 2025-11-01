@@ -14,7 +14,6 @@ const props = defineProps({
     type: String,
     required: true
   },
-  // IDs of pins currently selected in other slots on the canvas
   unavailablePinIDs: {
     type: Array,
     default: () => []
@@ -23,43 +22,32 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'pin-selected'])
 
-// Get all pins from the collection store
 const collectionStore = useCollectionStore()
 const { allPins } = storeToRefs(collectionStore)
 
-// Get usedPins from the Quest Store (Global Game Constraint)
 const questStore = useQuestStore()
 const { usedPins } = storeToRefs(questStore)
 
-// Create a computed list of pins with eligibility
 const pinsWithEligibility = computed(() => {
   return allPins.value.map(pin => {
-    // Pin IDs are UInT64 in Cadence but strings in FCL/JS dictionary keys
     const pinIdString = pin.id.toString()
-
-    // Condition 1: Does it meet the quest trait requirement?
     const meetsRequirement = checkPin(pin, props.requirement)
-
-    // Condition 2: Is it already selected in another slot on this canvas?
     const isUnavailable = props.unavailablePinIDs.includes(pinIdString)
-
-    // Condition 3: Has it been used in a previous quest this season (from the contract)?
     const isHistoricallyUsed = !!usedPins.value[pinIdString]
+
+    let filterReason = null
+    if (!meetsRequirement) filterReason = "No Match"
+    else if (isHistoricallyUsed) filterReason = "Used (Season)"
+    else if (isUnavailable) filterReason = "Used (Canvas)"
 
     return {
       ...pin,
-      meetsRequirement,
-      isUnavailable,
-      isHistoricallyUsed,
-      // A pin is ELIGIBLE only if it meets the requirement and hasn't been used.
-      isEligible: meetsRequirement && !isHistoricallyUsed && !isUnavailable,
-      // A pin is FILTERED if it fails ANY of the three conditions
-      isFiltered: !meetsRequirement || isHistoricallyUsed || isUnavailable
+      isEligible: !filterReason,
+      filterReason: filterReason
     }
   })
 })
 
-// Handle pin selection
 const selectPin = (pin) => {
   if (pin.isEligible) {
     emit('pin-selected', pin)
@@ -67,7 +55,6 @@ const selectPin = (pin) => {
   }
 }
 
-// Handle closing the modal
 const closeModal = () => {
   emit('close')
 }
@@ -87,21 +74,15 @@ const closeModal = () => {
             v-for="pin in pinsWithEligibility"
             :key="pin.id"
             class="pin-card"
-            :class="{
-            'is-ineligible': pin.isFiltered,
-            'is-used-history': pin.isHistoricallyUsed,
-            'is-used-canvas': pin.isUnavailable
-          }"
+            :class="{ 'is-ineligible': !pin.isEligible }"
             @click="selectPin(pin)"
         >
           <img :src="pin.thumbnail" :alt="pin.name" />
           <p>{{ pin.name }}</p>
-          <span>ID: {{ pin.id }}</span>
 
-          <div v-if="pin.isHistoricallyUsed" class="used-overlay">USED (SEASON)</div>
-          <div v-else-if="pin.isUnavailable" class="used-overlay">USED (CANVAS)</div>
-          <div v-else-if="!pin.meetsRequirement" class="used-overlay">NO MATCH</div>
-
+          <div v-if="!pin.isEligible" class="status-tag" :class="pin.filterReason">
+            {{ pin.filterReason }}
+          </div>
         </div>
       </div>
 
@@ -120,117 +101,152 @@ const closeModal = () => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.85);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
 }
-
 .modal-content {
   width: 90%;
-  max-width: 800px;
+  max-width: 900px;
   max-height: 90vh;
   background-color: var(--vt-c-black-soft);
-  border-radius: 12px;
-  padding: 1.5rem 2rem;
+  border-radius: 16px;
+  padding: 2rem;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--vt-c-divider-dark-2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
 }
-
 .modal-header {
   position: relative;
-  border-bottom: 1px solid var(--vt-c-divider-dark-1);
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--vt-c-divider-dark-1);
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
 }
-
 .modal-header h2 {
-  margin: 0;
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+  color: var(--vt-c-white-soft);
 }
-
 .modal-header p {
   font-size: 1.1rem;
   color: var(--vt-c-text-dark-2);
-  margin-top: 0.25rem;
 }
-
 .modal-header p span {
   color: var(--vt-c-green);
   font-weight: bold;
+  background-color: var(--vt-c-black-mute);
+  padding: 4px 8px;
+  border-radius: 4px;
 }
-
 .close-btn {
   position: absolute;
-  top: -5px;
-  right: -5px;
+  top: 0px;
+  right: 0px;
   background: var(--vt-c-black-mute);
-  border: 1px solid var(--vt-c-divider-dark-1);
+  border: 1px solid var(--vt-c-divider-dark-2);
+  color: var(--vt-c-text-dark-2);
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  font-size: 1.5rem;
+  width: 36px;
+  height: 36px;
+  font-size: 1.8rem;
   line-height: 1;
   cursor: pointer;
-  display: flex
-;
   padding: 0;
+  display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+}
+.close-btn:hover {
+  background: var(--vt-c-indigo);
+  color: var(--vt-c-white-soft);
 }
 
 .pin-grid {
   overflow-y: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 1.25rem;
   padding: 0.5rem;
 }
-
 .pin-card {
   border: 1px solid var(--vt-c-divider-dark-2);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 1rem;
   text-align: center;
   background-color: var(--vt-c-black-mute);
   word-wrap: break-word;
   cursor: pointer;
   transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
-.pin-card:hover {
-  transform: translateY(-3px);
+.pin-card:hover:not(.is-ineligible) {
+  transform: scale(1.05);
   border-color: var(--vt-c-green);
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
 }
-
 .pin-card img {
-  width: 80px;
-  height: 80px;
+  width: 100%;
+  max-width: 90px;
+  height: auto;
+  aspect-ratio: 1 / 1;
   border-radius: 8px;
   object-fit: contain;
   background-color: var(--vt-c-divider-dark-1);
   margin-bottom: 0.5rem;
+  margin-left: auto;
+  margin-right: auto;
 }
 .pin-card p {
   font-size: 0.9rem;
   font-weight: 500;
   margin-top: 0.5rem;
-}
-.pin-card span {
-  font-size: 0.8rem;
-  color: var(--vt-c-text-dark-2);
-  font-family: monospace;
+  color: var(--vt-c-white-soft);
+  flex-grow: 1;
 }
 
-/* This is the dimming logic */
+/* Dimming logic */
 .pin-card.is-ineligible {
-  opacity: 0.3;
+  opacity: 0.4;
   filter: grayscale(80%);
   cursor: not-allowed;
   border-color: var(--vt-c-divider-dark-2);
 }
 .pin-card.is-ineligible:hover {
   transform: none;
+  box-shadow: none;
+}
+.no-pins {
+  text-align: center;
+  padding: 3rem;
+  color: var(--vt-c-text-dark-2);
+  font-style: italic;
+}
+
+/* NEW: Status Tag Styles */
+.status-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 6px;
+  border-radius: 4px;
+  margin-top: 0.75rem;
+  width: 100%;
+}
+.status-tag.NoMatch {
+  background-color: #aa2222;
+  color: var(--vt-c-white-soft);
+}
+.status-tag.UsedSeason {
+  background-color: var(--vt-c-yellow);
+  color: var(--vt-c-black-soft);
+}
+.status-tag.UsedCanvas {
+  background-color: var(--vt-c-indigo);
+  color: var(--vt-c-white-soft);
 }
 </style>
