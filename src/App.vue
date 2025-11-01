@@ -2,14 +2,20 @@
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from './stores/user'
+import { useQuestStore } from './stores/quest' // 1. Import quest store
 
 import WalletConnect from './components/WalletConnect.vue'
+import QuestStatus from './components/QuestStatus.vue'
 import QuestCanvas from './components/QuestCanvas.vue'
 import UserCollection from './components/UserCollection.vue'
-import Leaderboard from './components/Leaderboard.vue' // 1. IMPORT
+import Leaderboard from './components/Leaderboard.vue'
 
 const userStore = useUserStore()
 const { isLoggedIn } = storeToRefs(userStore)
+
+// 2. Get isUpdating flag
+const questStore = useQuestStore()
+const { isUpdating } = storeToRefs(questStore)
 
 onMounted(() => {
   userStore.subscribe()
@@ -23,14 +29,22 @@ onMounted(() => {
   </header>
 
   <main>
+    <div v-if="isUpdating" class="update-overlay">
+      <div class="spinner"></div>
+      <span>New quest is being scheduled...</span>
+      <span>(This is a live Forte job update!)</span>
+    </div>
+
     <div v-if="!isLoggedIn" class="logged-out-message">
       <h2>Welcome</h2>
       <p>Please connect your Testnet wallet to begin.</p>
     </div>
 
     <div v-if="isLoggedIn">
+      <QuestStatus />
       <QuestCanvas />
-      <Leaderboard /> <UserCollection />
+      <Leaderboard />
+      <UserCollection />
     </div>
   </main>
 </template>
@@ -42,5 +56,43 @@ onMounted(() => {
   padding: 3rem;
   background-color: var(--vt-c-black-soft);
   border-radius: 12px;
+}
+
+/* 4. NEW: Styles for the overlay */
+.update-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  color: var(--vt-c-white-soft);
+  text-align: center;
+}
+.update-overlay span {
+  font-size: 1.2rem;
+  margin-top: 1rem;
+}
+.update-overlay span:last-child {
+  font-size: 1rem;
+  color: var(--vt-c-green-light);
+  font-family: monospace;
+}
+.spinner {
+  border: 4px solid var(--vt-c-divider-dark-1);
+  border-top: 4px solid var(--vt-c-green);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>

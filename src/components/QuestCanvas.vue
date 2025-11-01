@@ -36,19 +36,19 @@ const { fetchLeaderboard } = leaderboardStore
 
 // --- Combined Loading State ---
 const isLoading = computed(() => isQuestLoading.value || isLeaderboardLoading.value)
-
-// Computed value for "is submitted" state
 const isLocked = computed(() => hasUserSubmitted.value || submissionSuccess.value)
 
 // --- Methods ---
 onMounted(() => {
-  fetchQuest()
+  // Call fetchQuest for the *initial* load (isUpdate = false)
+  fetchQuest(false)
   fetchLeaderboard()
 })
 
+// handleManualRefresh function is REMOVED
+
 const openPinSelector = (slotNumber) => {
   if (isLocked.value) return
-
   currentSlotNumber.value = slotNumber
   if (currentQuest.value) {
     if (slotNumber === 1) currentRequirement.value = currentQuest.value.slot1_requirement
@@ -76,12 +76,11 @@ const getUnavailablePinIDs = computed(() => {
   <div class="quest-canvas">
     <div class="header">
       <h2>Daily Quest</h2>
-      <button @click="fetchQuest" :disabled="isLoading">Refresh</button>
     </div>
 
     <div v-if="isLoading" class="loading">Loading Quest...</div>
 
-    <div v-if="currentQuest" class="quest-details">
+    <div v-if="currentQuest && !isLoading" class="quest-details">
       <h3>Quest ID: {{ currentQuest.questID }}</h3>
 
       <ul class="slots">
@@ -180,9 +179,12 @@ const getUnavailablePinIDs = computed(() => {
   background-color: var(--vt-c-indigo);
   color: var(--vt-c-white-soft);
 }
-.loading, .error {
+.loading {
   color: var(--vt-c-text-dark-2);
+  text-align: center;
+  padding: 2rem;
 }
+
 .error {
   color: var(--vt-c-yellow);
 }

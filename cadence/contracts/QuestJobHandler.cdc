@@ -79,7 +79,6 @@ access(all) contract QuestJobHandler {
     }
 
     // --- Handler Resource ---
-    // Renamed from ConcreteHandler to Handler to match the example pattern
     access(all) resource Handler: FlowTransactionScheduler.TransactionHandler {
 
         access(FlowTransactionScheduler.Execute) fun executeTransaction(id: UInt64, data: AnyStruct?) {
@@ -92,11 +91,16 @@ access(all) contract QuestJobHandler {
             let updatedConfig = cronConfig.withIncrementedCount()
 
             if !updatedConfig.shouldContinue() {
+                PinQuest.setNextQuestStartTime(timestamp: nil)
                 log("PinQuest cron job completed after ".concat(updatedConfig.executionCount.toString()).concat(" executions"))
                 return
             }
 
             let nextExecutionTime = cronConfig.getNextExecutionTime()
+
+            // --- NEW LINE: Update the public timestamp in PinQuest ---
+            PinQuest.setNextQuestStartTime(timestamp: nextExecutionTime)
+            // --- END NEW LINE ---
 
             let estimate = FlowTransactionScheduler.estimate(
                 data: updatedConfig,
@@ -132,7 +136,6 @@ access(all) contract QuestJobHandler {
     }
 
     // --- Factory Function ---
-    // Now creates and returns @Handler, matching the resource name
     access(all) fun createHandler(): @Handler {
         return <- create Handler()
     }
@@ -160,4 +163,3 @@ access(all) contract QuestJobHandler {
         )
     }
 }
-
