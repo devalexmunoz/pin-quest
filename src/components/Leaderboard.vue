@@ -92,7 +92,7 @@ th {
 td.rank {
   font-weight: bold;
   font-size: 1.2rem;
-  color: var(--vt-c-green-light);
+  color: var(--vt-c-green);
   width: 10%;
 }
 td.address {

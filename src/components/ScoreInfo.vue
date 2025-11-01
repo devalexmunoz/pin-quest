@@ -77,7 +77,7 @@
 }
 
 .rule-card h3 {
-  color: var(--vt-c-green-light);
+  color: var(--vt-c-white);
   font-size: 1.2rem;
   margin-bottom: 1rem;
 }
@@ -94,6 +94,6 @@
 }
 
 .rule-card li strong {
-  color: var(--vt-c-yellow);
+  color: var(--vt-c-indigo);
 }
 </style>

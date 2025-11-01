@@ -286,7 +286,7 @@ const getUnavailablePinIDs = computed(() => {
   font-weight: 500;
 }
 .select-pin-btn:hover {
-  background-color: #4a5d7c;
+  background-color: #8b56af;
 }
 .slot-filled {
   flex-grow: 1;
@@ -300,14 +300,14 @@ const getUnavailablePinIDs = computed(() => {
 .selected-pin {
   font-size: 0.9rem;
   font-weight: bold;
-  color: var(--vt-c-green-light);
+  color: var(--vt-c-indigo);
   word-wrap: break-word;
 }
 .selected-pin img {
   width: 100px;
   height: 100px;
   border-radius: 8px;
-  background: var(--vt-c-black);
+  background: var(--vt-c-divider-dark-1);
   object-fit: contain;
   margin-bottom: 0.5rem;
 }
@@ -337,14 +337,16 @@ const getUnavailablePinIDs = computed(() => {
   font-size: 1.2rem;
   padding: 1rem 2.5rem;
   font-weight: bold;
-  border-radius: 10px;
+  border-radius: 3rem;
   min-width: 250px;
 }
 .submit-btn:disabled {
-  background-color: var(--vt-c-divider-dark-1);
-  color: var(--vt-c-text-dark-2);
+  opacity: 0.5;
   cursor: not-allowed;
   box-shadow: none;
+}
+.submit-btn:not(:disabled):hover {
+  background-color: var(--vt-c-green-darker);
 }
 .submission-status {
   font-size: 1.2rem;
@@ -365,7 +367,7 @@ const getUnavailablePinIDs = computed(() => {
   color: var(--vt-c-black-soft);
 }
 .submission-status.submitted {
-  background-color: var(--vt-c-green-light);
+  background-color: var(--vt-c-accent);
   color: var(--vt-c-black-soft);
 }
 .submission-status.error {

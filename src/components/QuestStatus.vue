@@ -138,7 +138,7 @@ onUnmounted(() => {
 }
 .status-item .quest-id {
   font-family: monospace;
-  color: var(--vt-c-green-light);
+  color: var(--vt-c-green);
 }
 .status-item .countdown {
   font-family: monospace;
@@ -162,7 +162,7 @@ onUnmounted(() => {
   background-color: var(--vt-c-green);
   border-radius: 50%;
   margin-right: 0.75rem;
-  box-shadow: 0 0 8px var(--vt-c-green-light);
+  box-shadow: 0 0 8px var(--vt-c-green);
   animation: pulse 2s infinite;
 }
 @keyframes pulse {

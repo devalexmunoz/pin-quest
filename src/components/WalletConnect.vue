@@ -40,6 +40,6 @@ const { logIn, logOut } = userStore
   font-size: 0.9rem;
 }
 .logout-btn:hover {
-  background-color: #3a506b;
+  background-color: #8b56af;
 }
 </style>

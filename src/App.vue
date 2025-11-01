@@ -74,7 +74,7 @@ onMounted(() => {
 }
 .update-overlay span:last-child {
   font-size: 1rem;
-  color: var(--vt-c-green-light);
+  color: var(--vt-c-green);
   font-family: monospace;
 }
 .spinner {

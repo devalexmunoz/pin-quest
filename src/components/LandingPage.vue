@@ -61,7 +61,7 @@
   margin-top: 0.5rem;
 }
 .hero .subtitle strong {
-  color: var(--vt-c-green-light);
+  color: var(--vt-c-accent);
   font-weight: 600;
 }
 
