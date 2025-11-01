@@ -1,21 +1,18 @@
 <script setup>
 import { onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useCollectionStore } from '../stores/collection' // Adjust path
-import { useUserStore } from '../stores/user' // Adjust path
+import { useCollectionStore } from '../stores/collection'
+import { useUserStore } from '../stores/user'
 
-// 1. Get Stores
 const collectionStore = useCollectionStore()
 const userStore = useUserStore()
 
-// 2. Get state reactively
 const { allPins, isLoading, loadingMessage } = storeToRefs(collectionStore)
 const { userAddress } = storeToRefs(userStore)
 
-// 3. Get actions
 const { checkCollection, fetchPins, setupDemoWallet } = collectionStore
 
-// 4. This function handles loading all user data
+// This function handles loading all user data
 const loadUserData = async (address) => {
   if (!address) {
     allPins.value = [] // Clear pins on logout
@@ -34,12 +31,12 @@ const loadUserData = async (address) => {
   }
 }
 
-// 5. Watch for the user to log in or out
+// Watch for the user to log in or out
 watch(userAddress, (newAddress) => {
   loadUserData(newAddress)
 })
 
-// 6. Also run on initial component mount
+// Also run on initial component mount
 // (in case the user is already logged in on page load)
 onMounted(() => {
   if (userAddress.value) {
@@ -50,7 +47,7 @@ onMounted(() => {
 
 <template>
   <div class="collection-container">
-    <h2>Your Pins</h2>
+    <h2>Your Pinnacle Collection</h2>
 
     <div v-if="isLoading" class="loading-state">
       <p>{{ loadingMessage }}</p>
@@ -72,7 +69,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Styles remain the same */
 .collection-container {
   background-color: var(--vt-c-black-soft);
   border: 1px solid var(--vt-c-divider-dark-2);
@@ -108,7 +104,7 @@ onMounted(() => {
   width: 100px;
   height: 100px;
   border-radius: 8px;
-  object-fit: cover;
+  object-fit: contain;
   background-color: var(--vt-c-divider-dark-1);
   margin-bottom: 0.5rem;
 }

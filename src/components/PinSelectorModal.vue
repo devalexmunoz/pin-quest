@@ -23,15 +23,15 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'pin-selected'])
 
-// 1. Get all pins from the collection store
+// Get all pins from the collection store
 const collectionStore = useCollectionStore()
 const { allPins } = storeToRefs(collectionStore)
 
-// 2. Get usedPins from the Quest Store (Global Game Constraint)
+// Get usedPins from the Quest Store (Global Game Constraint)
 const questStore = useQuestStore()
 const { usedPins } = storeToRefs(questStore)
 
-// 3. Create a computed list of pins with eligibility
+// Create a computed list of pins with eligibility
 const pinsWithEligibility = computed(() => {
   return allPins.value.map(pin => {
     // Pin IDs are UInT64 in Cadence but strings in FCL/JS dictionary keys
@@ -59,7 +59,7 @@ const pinsWithEligibility = computed(() => {
   })
 })
 
-// 4. Handle pin selection
+// Handle pin selection
 const selectPin = (pin) => {
   if (pin.isEligible) {
     emit('pin-selected', pin)
@@ -67,7 +67,7 @@ const selectPin = (pin) => {
   }
 }
 
-// 5. Handle closing the modal
+// Handle closing the modal
 const closeModal = () => {
   emit('close')
 }
@@ -173,6 +173,12 @@ const closeModal = () => {
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
+  display: flex
+;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
 }
 
 .pin-grid {
@@ -202,7 +208,7 @@ const closeModal = () => {
   width: 80px;
   height: 80px;
   border-radius: 8px;
-  object-fit: cover;
+  object-fit: contain;
   background-color: var(--vt-c-divider-dark-1);
   margin-bottom: 0.5rem;
 }

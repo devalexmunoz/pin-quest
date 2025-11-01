@@ -10,8 +10,6 @@ transaction(intervalSeconds: UFix64, startTimeOffsetSeconds: UFix64) {
     let priority: FlowTransactionScheduler.Priority
     let executionEffort: UInt64
     let handlerStoragePath: StoragePath
-
-    // The transaction-level variable to store the time
     let firstExecutionTime: UFix64
 
     prepare(signer: auth(BorrowValue, IssueStorageCapabilityController, SaveValue, GetStorageCapabilityController, PublishCapability) &Account) {
@@ -66,7 +64,6 @@ transaction(intervalSeconds: UFix64, startTimeOffsetSeconds: UFix64) {
         // Save the time to the transaction field
         self.firstExecutionTime = cronConfig.getNextExecutionTime()
 
-        // FIX: Use self.firstExecutionTime
         let est = FlowTransactionScheduler.estimate(
             data: cronConfig,
             timestamp: self.firstExecutionTime,
@@ -84,7 +81,6 @@ transaction(intervalSeconds: UFix64, startTimeOffsetSeconds: UFix64) {
             ?? panic("missing FlowToken vault")
         let fees <- vaultRef.withdraw(amount: est.flowFee ?? 0.0) as! @FlowToken.Vault
 
-        // FIX: Use self.firstExecutionTime
         let transactionId = manager.schedule(
             handlerCap: handlerCap!,
             data: cronConfig,
@@ -94,7 +90,6 @@ transaction(intervalSeconds: UFix64, startTimeOffsetSeconds: UFix64) {
             fees: <-fees
         )
 
-        // FIX: Use self.firstExecutionTime
         log("Scheduled first PinQuest cron job (id: ".concat(transactionId.toString()).concat(") to execute at ").concat(self.firstExecutionTime.toString()))
     }
 

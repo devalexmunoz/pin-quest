@@ -81,8 +81,6 @@ const getUnavailablePinIDs = computed(() => {
     <div v-if="isLoading" class="loading">Loading Quest...</div>
 
     <div v-if="currentQuest && !isLoading" class="quest-details">
-      <h3>Quest ID: {{ currentQuest.questID }}</h3>
-
       <ul class="slots">
         <li>
           <span>Slot 1</span> {{ currentQuest.slot1_requirement }}
@@ -157,7 +155,6 @@ const getUnavailablePinIDs = computed(() => {
 </template>
 
 <style scoped>
-/* ... (keep old styles) ... */
 .quest-canvas {
   background-color: var(--vt-c-black-soft);
   border: 1px solid var(--vt-c-divider-dark-2);
@@ -264,11 +261,11 @@ const getUnavailablePinIDs = computed(() => {
 .selected-pin img {
   width: 32px;
   height: 32px;
+  object-fit: contain;
   border-radius: 4px;
   background: var(--vt-c-black);
 }
 
-/* NEW: Styles for success/error messages */
 .submission-status {
   font-size: 1.2rem;
   font-weight: bold;

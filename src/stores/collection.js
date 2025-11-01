@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { FlowService } from '@/flow/flow.service'
 import { useUserStore } from './user'
-import { useQuestStore } from './quest' // NEW IMPORT
+import { useQuestStore } from './quest'
 
 import getPinsScript from '../flow/scripts/get-user-pins.cdc?raw'
 import checkCollectionScript from '../flow/scripts/check-pinnacle-collection.cdc?raw'
@@ -19,7 +19,6 @@ export const useCollectionStore = defineStore('collection', () => {
         isLoading.value = true
         loadingMessage.value = "Checking collection..."
         try {
-            // Use service
             const result = await FlowService.query(checkCollectionScript, {
                 address: { type: 'Address', value: address }
             })
@@ -36,7 +35,6 @@ export const useCollectionStore = defineStore('collection', () => {
         isLoading.value = true
         loadingMessage.value = "Loading your pins..."
         try {
-            // Use service
             const pins = await FlowService.query(getPinsScript, {
                 address: { type: 'Address', value: address }
             })
@@ -54,21 +52,18 @@ export const useCollectionStore = defineStore('collection', () => {
     const setupDemoWallet = async () => {
         isLoading.value = true
         const userStore = useUserStore()
-        const questStore = useQuestStore() // NEW: Get Quest Store
+        const questStore = useQuestStore()
 
         try {
             loadingMessage.value = "Setting up new collection..."
-            // Use service
             await FlowService.mutate(setupCollectionTx)
 
             loadingMessage.value = "Minting test pins..."
-            // Use service
             await FlowService.mutate(mintDemoPinsTx)
 
             loadingMessage.value = "Loading new pins..."
             await fetchPins(userStore.userAddress)
 
-            // NEW: Fetch used pins *after* setup so new pins appear available
             await questStore.fetchUsedPins()
 
         } catch (err) {

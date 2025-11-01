@@ -22,7 +22,7 @@ export const useUserStore = defineStore('user', () => {
     }
 
     const logOut = () => {
-        // FIX: Explicitly clear the local state before calling FCL's unauthenticate.
+        // Explicitly clear the local state before calling FCL's unauthenticate.
         // This ensures the Vue app immediately registers the logged out state.
         currentUser.value = null
         FlowService.logOut()

@@ -1,7 +1,7 @@
 import * as fcl from '@onflow/fcl'
 import { init as initFCL } from './init'
 
-// 1. AUTHENTICATION
+// AUTHENTICATION
 // -----------------
 
 /**
@@ -35,11 +35,11 @@ const subscribeToCurrentUser = (callback) => {
 }
 
 
-// 2. FCL HELPERS
+// FCL HELPERS
 // -----------------
 
 /**
- * NEW: Helper function to parse our simple type strings (e.g., "Array(UInt64)")
+ * Helper function to parse our simple type strings (e.g., "Array(UInt64)")
  * into complex FCL types (e.g., fcl.t.Array(fcl.t.UInt64)).
  */
 const getFclType = (typeString) => {
@@ -73,7 +73,6 @@ const getFclType = (typeString) => {
  */
 const query = async (cadence, args = {}) => {
     try {
-        // FIX: Use the new getFclType helper
         const fclArgs = Object.values(args).map((arg) => fcl.arg(arg.value, getFclType(arg.type)))
 
         return await fcl.query({
@@ -94,7 +93,6 @@ const query = async (cadence, args = {}) => {
  */
 const mutate = async (cadence, args = {}) => {
     try {
-        // FIX: Use the new getFclType helper
         const fclArgs = Object.values(args).map((arg) => fcl.arg(arg.value, getFclType(arg.type)))
 
         const transactionId = await fcl.mutate({
@@ -118,7 +116,7 @@ const onceSealed = (transactionId) => {
     return fcl.tx(transactionId).onceSealed()
 }
 
-// 3. EXPORT
+// EXPORT
 // ----------
 
 export const FlowService = {

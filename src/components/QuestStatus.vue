@@ -57,7 +57,6 @@ const formattedTime = computed(() => {
   return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
 })
 
-// FIX: This watch is more robust. It watches the 'total' property.
 watch(() => timeRemaining.value?.total, (newTotal, oldTotal) => {
   // oldTotal will be 'undefined' on the first run.
   // We only fire when oldTotal *exists* and was > 0.
@@ -111,7 +110,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* All styles remain exactly the same as before */
 .quest-status-container {
   display: grid;
   grid-template-columns: 1fr 2fr 1fr;

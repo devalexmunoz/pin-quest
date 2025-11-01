@@ -268,14 +268,12 @@ access(all) contract PinQuest {
         log("--- QUEST LIST HAS BEEN UPDATED ---")
     }
 
-    // --- Functions for Quest Timer (Public) ---
     access(all) fun setNextQuestStartTime(timestamp: UFix64?) {
         self.nextQuestStartTime = timestamp
     }
     access(all) fun getNextQuestStartTime(): UFix64? {
         return self.nextQuestStartTime
     }
-    // --- End New Functions ---
 
     access(all) fun getCurrentQuest() : QuestRules { return self.currentQuestRules }
     access(all) fun getLeaderboard(): {Address: UInt64} { return self.dailyLeaderboard }

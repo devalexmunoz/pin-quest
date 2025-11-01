@@ -1,14 +1,9 @@
 <script setup>
 import { storeToRefs } from 'pinia'
-import { useUserStore } from '../stores/user' // Adjust path if needed
+import { useUserStore } from '../stores/user'
 
-// 1. Get store
 const userStore = useUserStore()
-
-// 2. Get state reactively
 const { isLoggedIn, userAddress } = storeToRefs(userStore)
-
-// 3. Get actions
 const { logIn, logOut } = userStore
 </script>
 
@@ -25,7 +20,6 @@ const { logIn, logOut } = userStore
 </template>
 
 <style scoped>
-/* Styles remain the same */
 .wallet-info {
   display: flex;
   align-items: center;

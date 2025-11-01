@@ -91,6 +91,7 @@ access(all) contract QuestJobHandler {
             let updatedConfig = cronConfig.withIncrementedCount()
 
             if !updatedConfig.shouldContinue() {
+                // Reset next quest timestamp
                 PinQuest.setNextQuestStartTime(timestamp: nil)
                 log("PinQuest cron job completed after ".concat(updatedConfig.executionCount.toString()).concat(" executions"))
                 return
@@ -98,9 +99,8 @@ access(all) contract QuestJobHandler {
 
             let nextExecutionTime = cronConfig.getNextExecutionTime()
 
-            // --- NEW LINE: Update the public timestamp in PinQuest ---
+            // Set next quest timestamp
             PinQuest.setNextQuestStartTime(timestamp: nextExecutionTime)
-            // --- END NEW LINE ---
 
             let estimate = FlowTransactionScheduler.estimate(
                 data: updatedConfig,

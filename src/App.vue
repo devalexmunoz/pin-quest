@@ -58,7 +58,6 @@ onMounted(() => {
   border-radius: 12px;
 }
 
-/* 4. NEW: Styles for the overlay */
 .update-overlay {
   position: fixed;
   top: 0;

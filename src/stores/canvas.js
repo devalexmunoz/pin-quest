@@ -28,7 +28,7 @@ export const useCanvasStore = defineStore('canvas', () => {
         if (slotNumber === 3) slot3Pin.value = pin
 
         submissionError.value = null
-        submissionSuccess.value = false // Reset success message if they change a pin
+        submissionSuccess.value = false
     }
 
     const clearCanvas = () => {
@@ -56,13 +56,9 @@ export const useCanvasStore = defineStore('canvas', () => {
 
             await FlowService.onceSealed(transactionId)
 
-            // --- UPDATED SUCCESS LOGIC ---
-
-            // 1. Fetch leaderboard and used pins FIRST to get the new score
             await leaderboardStore.fetchLeaderboard()
             await questStore.fetchUsedPins()
 
-            // 2. Set success flag LAST
             submissionSuccess.value = true
 
         } catch (err) {

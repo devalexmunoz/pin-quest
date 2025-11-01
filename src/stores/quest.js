@@ -54,7 +54,7 @@ export const useQuestStore = defineStore('quest', () => {
                 fetchNextQuestTime()
             ]);
 
-            // FIX: If this was a Forte update and the quest ID *hasn't* changed,
+            // If this was a Forte update and the quest ID *hasn't* changed,
             // poll a few times to wait for the job to settle.
             if (isUpdate && currentQuest.value?.questID === oldQuestID) {
 
