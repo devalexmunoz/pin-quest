@@ -4,15 +4,19 @@ import { storeToRefs } from 'pinia'
 import { useCollectionStore } from '../stores/collection'
 import { useUserStore } from '../stores/user'
 
+// 1. Get Stores
 const collectionStore = useCollectionStore()
 const userStore = useUserStore()
 
-const { allPins, isLoading, loadingMessage } = storeToRefs(collectionStore)
+// 2. Get state reactively
+const { allPins, isLoading, loadingMessage, hasCollection } = storeToRefs(collectionStore)
 const { userAddress } = storeToRefs(userStore)
 
-const { checkCollection, fetchPins, setupDemoWallet } = collectionStore
+// 3. Get actions
+// setupDemoWallet is no longer imported
+const { checkCollection, fetchPins } = collectionStore
 
-// This function handles loading all user data
+// 4. Simplified load function
 const loadUserData = async (address) => {
   if (!address) {
     allPins.value = [] // Clear pins on logout
@@ -20,24 +24,23 @@ const loadUserData = async (address) => {
   }
 
   // User is logged in, check their collection
-  const hasCollection = await checkCollection(address)
+  const collectionExists = await checkCollection(address)
 
-  if (hasCollection) {
+  if (collectionExists) {
     // They have a collection, fetch their pins
     await fetchPins(address)
-  } else {
-    // No collection, run the demo setup
-    await setupDemoWallet()
   }
+  // If collectionExists is false, the 'hasCollection' ref
+  // will be false, and the template will show the correct message.
+  // We no longer try to create one.
 }
 
-// Watch for the user to log in or out
+// 5. Watch for the user to log in or out
 watch(userAddress, (newAddress) => {
   loadUserData(newAddress)
 })
 
-// Also run on initial component mount
-// (in case the user is already logged in on page load)
+// 6. Also run on initial component mount
 onMounted(() => {
   if (userAddress.value) {
     loadUserData(userAddress.value)
@@ -47,7 +50,7 @@ onMounted(() => {
 
 <template>
   <div class="collection-container">
-    <h2>Your Pinnacle Collection</h2>
+    <h2>Your Pins</h2>
 
     <div v-if="isLoading" class="loading-state">
       <p>{{ loadingMessage }}</p>
@@ -62,8 +65,12 @@ onMounted(() => {
       </div>
     </div>
 
-    <div v-if="allPins.length === 0 && !isLoading">
+    <div v-if="allPins.length === 0 && hasCollection && !isLoading" class="no-pins">
       You have no pins in your collection.
+    </div>
+
+    <div v-if="!hasCollection && !isLoading" class="no-pins">
+      No Pinnacle collection was found in this wallet.
     </div>
   </div>
 </template>
