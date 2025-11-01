@@ -1,182 +1,104 @@
-## 👋 Welcome Flow Developer!
+# ⚔️ Pinnacle PinQuest
 
-This project is a starting point for you to develop smart contracts on the Flow Blockchain. It comes with example contracts, scripts, transactions, and tests to help you get started.
+**Give your Pinnacle Pins a new purpose.**
 
-## 🔨 Getting Started
+Pinnacle PinQuest is a 100% on-chain, server-less daily quest game for Pinnacle collectors on the Flow blockchain.
 
-Here are some essential resources to help you hit the ground running:
+---
 
-- **[Flow Documentation](https://developers.flow.com/)** - The official Flow Documentation is a great starting point to start learning about [building](https://developers.flow.com/build/flow) on Flow.
-- **[Cadence Documentation](https://cadence-lang.org/docs/language)** - Cadence is the native language for the Flow Blockchain. It is a resource-oriented programming language that is designed for developing smart contracts.  The documentation is a great place to start learning about the language.
-- **[Visual Studio Code](https://code.visualstudio.com/)** and the **[Cadence Extension](https://marketplace.visualstudio.com/items?itemName=onflow.cadence)** - It is recommended to use the Visual Studio Code IDE with the Cadence extension installed.  This will provide syntax highlighting, code completion, and other features to support Cadence development.
-- **[Flow Clients](https://developers.flow.com/tools/clients)** - There are clients available in multiple languages to interact with the Flow Blockchain.  You can use these clients to interact with your smart contracts, run transactions, and query data from the network.
-- **[Block Explorers](https://developers.flow.com/ecosystem/block-explorers)** - Block explorers are tools that allow you to explore on-chain data.  You can use them to view transactions, accounts, events, and other information.  [Flowser](https://flowser.dev/) is a powerful block explorer for local development on the Flow Emulator.
+## 💡 The Concept (For Collectors)
 
-## 📦 Project Structure
+Your pin collection is amazing, but what if it could *do* something?
 
-Your project has been set up with the following structure:
+Pinnacle PinQuest gives your collection daily utility. Every day, a new quest is revealed with three trait requirements. Your goal is to fill the canvas with 3 pins from your collection that not only match the quest but also have the best Rarity and Synergy to maximize your score and climb the daily leaderboard.
 
-- `flow.json` - This is the configuration file for your project (analogous to a `package.json` file for NPM).  It has been initialized with a basic configuration to get started.
-- `/cadence` - This is where your Cadence smart contracts code lives
+### How to Play
 
-Inside the `cadence` folder you will find:
-- `/contracts` - This folder contains your Cadence contracts (these are deployed to the network and contain the business logic for your application)
-  - `Counter.cdc`
-- `/scripts` - This folder contains your Cadence scripts (read-only operations)
-  - `GetCounter.cdc`
-- `/transactions` - This folder contains your Cadence transactions (state-changing operations)
-  - `IncrementCounter.cdc`
-- `/tests` - This folder contains your Cadence tests (integration tests for your contracts, scripts, and transactions to verify they behave as expected)
+1.  **Connect Your Wallet**
+    Link your Flow wallet (like Blocto) that holds your Pinnacle Pins.
 
-## Running the Existing Project
+2.  **Complete the Daily Quest**
+    Analyze the 3 daily trait requirements (e.g., "Star Wars", "Digital Gold", "NotChaser") and select your best pins to match.
 
-### Executing the `GetCounter` Script
+3.  **Climb the Leaderboard**
+    Submit your quest to earn a score based on Rarity (Chasers, LEs) and Synergy (matching Franchises, Studios, or Materials).
 
-To run the `GetCounter` script, use the following command:
+---
 
-```shell
-flow scripts execute cadence/scripts/GetCounter.cdc
-```
+## 🏆 The Hackathon (For Judges)
 
-### Sending the `IncrementCounter` Transaction
+This project was built for the **Forte Hacks (Dapper Track)** with one goal: to build a truly automated, server-less, on-chain application.
 
-To run the `IncrementCounter` transaction, use the following command:
+### The Technical Achievement: 100% On-Chain Automation
 
-```shell
-flow transactions send cadence/transactions/IncrementCounter.cdc
-```
+The core problem with "daily" on-chain games is that they aren't *really* on-chain. They *always* require a centralized, off-chain server (a "keeper") to run a cron job and call a contract function to reset the day's quest.
 
-To learn more about using the CLI, check out the [Flow CLI Documentation](https://developers.flow.com/tools/flow-cli).
+**Pinnacle PinQuest has no server.**
 
-## 👨‍💻 Start Developing
+The *entire* game loop is automated by **Flow Forte Scheduled Transactions**.
 
-### Creating a New Contract
+1.  We wrote and deployed `QuestJobHandler.cdc`, a contract that follows the cron handler pattern.
+2.  We use `schedule-quest-job.cdc` to register this handler with the `FlowTransactionScheduler` to run automatically.
+3.  This Forte job calls our main `PinQuest.cdc` contract, which resets the quest, clears the leaderboard, and sets the new countdown timer.
 
-To add a new contract to your project, run the following command:
+The "Next Quest In" timer you see in the app is **not** a mock. It is a live countdown reading a public `nextQuestStartTime` variable from our smart contract, which is updated *by the Forte job itself*.
 
-```shell
-flow generate contract
-```
+### Features
 
-This command will create a new contract file and add it to the `flow.json` configuration file.
+* **100% Server-less Automation:** Powered by Flow Forte Scheduled Transactions.
+* **Dynamic On-Chain Scoring:** Score is calculated in the contract based on:
+  * **Base Score** (matching the slot)
+  * **Rarity Bonus** (Chaser, Limited Edition)
+  * **Synergy Bonus** (matching Franchise, Studio, or Material pairs/trios)
+* **On-Chain Validation:** The contract enforces all game rules:
+  * One submission per user, per quest.
+  * Pins cannot be re-used in the same canvas.
+  * Pins cannot be re-used for the entire season (all 7 quests).
+* **Live On-Chain Timer:** The UI features a live countdown to the next quest, proving the automation is on-chain.
 
-### Creating a New Script
+---
 
-To add a new script to your project, run the following command:
+## 🛠️ Tech Stack
 
-```shell
-flow generate script
-```
+* **Frontend:** Vue 3 (Composition API), Pinia, Vite
+* **Blockchain:** Cadence, Flow Client Library (FCL)
+* **Automation:** Flow Forte Scheduled Transactions
 
-This command will create a new script file.  Scripts are used to read data from the blockchain and do not modify state (i.e. get the current balance of an account, get a user's NFTs, etc).
+---
 
-You can import any of your own contracts or installed dependencies in your script file using the `import` keyword.  For example:
+## ⚙️ Development Approach & Testnet
 
-```cadence
-import "Counter"
-```
+Pinnacle PinQuest is designed to integrate directly with the official **Disney Pinnacle** NFT collection, providing new utility for existing collectors.
 
-### Creating a New Transaction
+As no official Testnet version of the `Pinnacle` contract was available for development, we took the following steps to build our demo:
 
-To add a new transaction to your project you can use the following command:
+1.  We deployed a **local copy** of the `Pinnacle.cdc` contract to our Testnet account.
+2.  We **minted 10 test pins** (simulating real pins from the collection) to our deployer account.
+3.  We **transferred these test pins** to a separate app wallet, which we used for all testing and for our demo video.
 
-```shell
-flow generate transaction
-```
+This approach allowed us to accurately simulate the live mainnet environment and prove our application's functionality for real-world collectors.
 
-This command will create a new transaction file.  Transactions are used to modify the state of the blockchain (i.e purchase an NFT, transfer tokens, etc).
+---
 
-You can import any dependencies as you would in a script file.
+## 📄 Smart Contracts
 
-### Creating a New Test
+All contracts and admin transactions are in the `/cadence` directory. The user-facing app scripts are in `/src/flow`.
 
-To add a new test to your project you can use the following command:
+### Deployed Contracts (Testnet)
 
-```shell
-flow generate test
-```
+* **Pinnacle (copy):** `0x2dc97da14102bbd6`
+* **PinQuest:** `0x2dc97da14102bbd6`
+* **QuestJobHandler:** `0x2dc97da14102bbd6`
 
-This command will create a new test file.  Tests are used to verify that your contracts, scripts, and transactions are working as expected.
+### Admin Setup (One-Time)
 
-### Installing External Dependencies
+To start the automated job, the deployer must run:
 
-If you want to use external contract dependencies (such as NonFungibleToken, FlowToken, FungibleToken, etc.) you can install them using [Flow CLI Dependency Manager](https://developers.flow.com/tools/flow-cli/dependency-manager).
-
-For example, to install the NonFungibleToken contract you can use the following command:
-
-```shell
-flow deps add mainnet://1d7e57aa55817448.NonFungibleToken
-```
-
-Contracts can be found using [ContractBrowser](https://contractbrowser.com/), but be sure to verify the authenticity before using third-party contracts in your project.
-
-## 🧪 Testing
-
-To verify that your project is working as expected you can run the tests using the following command:
-
-```shell
-flow test
-```
-
-This command will run all tests with the `_test.cdc` suffix (these can be found in the `cadence/tests` folder). You can add more tests here using the `flow generate test` command (or by creating them manually).
-
-To learn more about testing in Cadence, check out the [Cadence Test Framework Documentation](https://cadence-lang.org/docs/testing-framework).
-
-## 🚀 Deploying Your Project
-
-To deploy your project to the Flow network, you must first have a Flow account and have configured your deployment targets in the `flow.json` configuration file.
-
-You can create a new Flow account using the following command:
-
-```shell
-flow accounts create
-```
-
-Learn more about setting up deployment targets in the [Flow CLI documentation](https://developers.flow.com/tools/flow-cli/deployment/project-contracts).
-
-### Deploying to the Flow Emulator
-
-To deploy your project to the Flow Emulator, start the emulator using the following command:
-
-```shell
-flow emulator --start
-```
-
-To deploy your project, run the following command:
-
-```shell
-flow project deploy --network=emulator
-```
-
-This command will start the Flow Emulator and deploy your project to it. You can now interact with your project using the Flow CLI or alternate [client](https://developers.flow.com/tools/clients).
-
-### Deploying to Flow Testnet
-
-To deploy your project to Flow Testnet you can use the following command:
-
-```shell
-flow project deploy --network=testnet
-```
-
-This command will deploy your project to Flow Testnet. You can now interact with your project on this network using the Flow CLI or any other Flow client.
-
-### Deploying to Flow Mainnet
-
-To deploy your project to Flow Mainnet you can use the following command:
-
-```shell
-flow project deploy --network=mainnet
-```
-
-This command will deploy your project to Flow Mainnet. You can now interact with your project using the Flow CLI or alternate [client](https://developers.flow.com/tools/clients).
-
-## 📚 Other Resources
-
-- [Cadence Design Patterns](https://cadence-lang.org/docs/design-patterns)
-- [Cadence Anti-Patterns](https://cadence-lang.org/docs/anti-patterns)
-- [Flow Core Contracts](https://developers.flow.com/build/core-contracts)
-
-## 🤝 Community
-- [Flow Community Forum](https://forum.flow.com/)
-- [Flow Discord](https://discord.gg/flow)
-- [Flow Twitter](https://x.com/flow_blockchain)
+1.  **Setup Handler:**
+    ```bash
+    flow transactions send ./cadence/transactions/setup-quest-job-handler.cdc --network testnet --signer [DEPLOYER_ACCOUNT]
+    ```
+2.  **Schedule Job (runs every 5 min):**
+    ```bash
+    flow transactions send ./cadence/transactions/schedule-quest-job.cdc --network testnet --signer [DEPLOYER_ACCOUNT] --arg UFix64:300.0 --arg UFix64:0.0
+    ```
